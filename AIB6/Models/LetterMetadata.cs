@@ -1,5 +1,3 @@
-using System;
-
 public class LetterMetadata
 {
     public string Filename { get; set; }

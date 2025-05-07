@@ -1,16 +1,9 @@
-using System;
-using System.IO;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Npgsql;
-using MessageBox.Avalonia;
-using MessageBox.Avalonia.Enums;
-using MessageBox.Avalonia.Models;
 
 namespace AIB6;
 
@@ -41,7 +34,7 @@ public partial class MainWindow : Window
 
         response.EnsureSuccessStatusCode();
 
-        using var stream = await response.Content.ReadAsStreamAsync();
+        await using var stream = await response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
 
         var fullResponse = new StringBuilder();
@@ -97,13 +90,13 @@ public partial class MainWindow : Window
             var docsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AIBDOCS");
             Directory.CreateDirectory(docsPath);
             var filePath = Path.Combine(docsPath, filename + ".txt");
-            File.WriteAllText(filePath, PreviewBox.Text);
+            await File.WriteAllTextAsync(filePath, PreviewBox.Text);
 
             // write metadata
-            using var conn = new NpgsqlConnection("Host=localhost;Username=postgres;Password=Kitten77;Database=AIB6");
+            await using var conn = new NpgsqlConnection("Host=localhost;Username=postgres;Password=Kitten77;Database=postgres");
             await conn.OpenAsync();
 
-            using var cmd = new NpgsqlCommand("call insert_letter(@filename, @type, @ts, @fav, @hide)", conn);
+            await using var cmd = new NpgsqlCommand("call insert_letter(@filename, @type, @ts, @fav, @hide)", conn);
             cmd.Parameters.AddWithValue("filename", filename + ".txt");
             cmd.Parameters.AddWithValue("type", selectedLetterType);
             cmd.Parameters.AddWithValue("ts", timestamp);
@@ -112,15 +105,17 @@ public partial class MainWindow : Window
 
             await cmd.ExecuteNonQueryAsync();
 
-            MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow("Saved", "Draft saved successfully.")
-                .Show();
+            //await MessageBox.Avalonia.MessageBoxManager
+              //  .GetMessageBoxStandardWindow("Saved", "Draft saved successfully.")
+             //   .Show();
+
         }
         catch (Exception ex)
         {
-            await MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow("Error", ex.Message)
-                .Show();
+            PreviewBox.Text = ex.Message + "   " + ex.StackTrace;
+            //await MessageBox.Avalonia.MessageBoxManager
+            //    .GetMessageBoxStandardWindow("Error", ex.Message)
+             //   .Show();
         }
     }
 
