@@ -1,0 +1,11 @@
+# Ignore build outputs
+/bin/
+/obj/
+
+# Rider files
+.idea/
+/*.sln.DotSettings.user
+
+# OS junk
+.DS_Store
+Thumbs.db
