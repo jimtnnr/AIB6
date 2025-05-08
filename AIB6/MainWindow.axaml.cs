@@ -20,12 +20,12 @@ public partial class MainWindow : Window
         var httpClient = new HttpClient();
         var requestBody = new
         {
-            model = "mistral", // or your actual model
+            model = "mixtral", // or your actual model
             prompt = prompt,
             stream = true
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:11434/api/generate")
+        var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:11534/api/generate")
         {
             Content = JsonContent.Create(requestBody)
         };
