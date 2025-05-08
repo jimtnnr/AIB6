@@ -25,7 +25,7 @@ public partial class MainWindow : Window
             stream = true
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:11534/api/generate")
+        var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:11434/api/generate")
         {
             Content = JsonContent.Create(requestBody)
         };
