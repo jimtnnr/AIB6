@@ -20,7 +20,7 @@ public partial class MainWindow : Window
         var httpClient = new HttpClient();
         var requestBody = new
         {
-            model = "mixtral", // or your actual model
+            model = "mistral", // or your actual model
             prompt = prompt,
             stream = true
         };
