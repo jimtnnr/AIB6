@@ -1,84 +1,19 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:AIB6"
         x:Class="AIB6.MainWindow"
-        Title="AIB - Legal Letter"
-        Width="900" Height="600"
-        WindowStartupLocation="CenterScreen">
+        Title="AIB6" Width="900" Height="750"
+        WindowStartupLocation="CenterScreen"
+        >
 
-  <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto" ColumnDefinitions="2*,3*">
+  <TabControl>
+    <TabItem Header="Create Drafts">
+      <local:LetterTab />
+    </TabItem>
+    <TabItem Header="Review Drafts">
+      <TextBlock Text="(Archive grid will go here)" Margin="20"/>
+    </TabItem>
+  </TabControl>
 
-    <!-- Letter Type List -->
-    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0 0 10 10">
-      <TextBlock Text="Letter Type" FontWeight="Bold" Margin="0 0 0 5"/>
-      <ListBox x:Name="LetterTypeList" Height="120" SelectedIndex="0">
-        <ListBoxItem Content="Tenant Complaint"/>
-        <ListBoxItem Content="Cease and Desist"/>
-        <ListBoxItem Content="Debt Collection"/>
-        <ListBoxItem Content="Eviction Notice"/>
-        <ListBoxItem Content="Payment Reminder"/>
-        <ListBoxItem Content="Noise Complaint"/>
-        <ListBoxItem Content="Lease Violation"/>
-        <ListBoxItem Content="Utility Disconnection"/>
-        <ListBoxItem Content="Security Deposit Refund"/>
-        <ListBoxItem Content="Notice of Intent to Sue"/>
-      </ListBox>
-    </StackPanel>
-
-    <!-- Tone/Formality/Length Controls -->
-    <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="10" Margin="0 0 10 10">
-      <ComboBox x:Name="ToneSelect" Width="120" SelectedIndex="0">
-        <ComboBoxItem Content="Professional"/>
-        <ComboBoxItem Content="Friendly"/>
-        <ComboBoxItem Content="Stern"/>
-      </ComboBox>
-
-      <ComboBox x:Name="FormalitySelect" Width="120" SelectedIndex="0">
-        <ComboBoxItem Content="Neutral"/>
-        <ComboBoxItem Content="Casual"/>
-        <ComboBoxItem Content="Formal"/>
-      </ComboBox>
-
-      <ComboBox x:Name="LengthSelect" Width="120" SelectedIndex="0">
-        <ComboBoxItem Content="Short"/>
-        <ComboBoxItem Content="Medium"/>
-        <ComboBoxItem Content="Long"/>
-      </ComboBox>
-
-    </StackPanel>
-
-    <!-- Input Text -->
-    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0 0 10 10">
-      <TextBlock Text="Letter Input" FontWeight="Bold" Margin="0 0 0 5"/>
-      <TextBox x:Name="UserInput"
-               AcceptsReturn="True"
-               TextWrapping="Wrap"
-               ScrollViewer.VerticalScrollBarVisibility="Auto"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-               Height="300"/>
-    </StackPanel>
-
-    <!-- Preview Output -->
-    <StackPanel Grid.Row="2" Grid.Column="1" Margin="10 0 0 10">
-      <TextBlock Text="Preview" FontWeight="Bold" Margin="0 0 0 5"/>
-      <TextBox x:Name="PreviewBox"
-               AcceptsReturn="True"
-               IsReadOnly="True"
-               TextWrapping="Wrap"
-               ScrollViewer.VerticalScrollBarVisibility="Auto"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-               Height="300"/>
-    </StackPanel>
-
-
-    <!-- Bottom Buttons, aligned under each column -->
-    <Grid Grid.Row="3" Grid.ColumnSpan="2" ColumnDefinitions="2*,3*" Margin="0 20 0 10">
-      <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-        <Button x:Name="GenerateButton" Content="Generate Draft" Width="150"/>
-      </StackPanel>
-      <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-        <Button x:Name="SaveButton" Content="Save Draft" Width="150"/>
-      </StackPanel>
-    </Grid>
-
-  </Grid>
 </Window>
+

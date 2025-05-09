@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AIB6.LetterTab">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="20" Spacing="10">
+
+      <TextBlock Text="Letter Generator" FontSize="24" FontWeight="Bold"/>
+
+      <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto">
+        <StackPanel Grid.Column="0" Spacing="4">
+          <TextBlock Text="Letter Type"/>
+          <ComboBox x:Name="LetterTypeDropdown"
+                    IsTextSearchEnabled="True"
+                    />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="4">
+          <TextBlock Text="Tone"/>
+          <ComboBox x:Name="ToneDropdown"/>
+        </StackPanel>
+        <StackPanel Grid.Column="2" Spacing="4">
+          <TextBlock Text="Formality"/>
+          <ComboBox x:Name="FormalityDropdown"/>
+        </StackPanel>
+        <StackPanel Grid.Column="3" Spacing="4">
+          <TextBlock Text="Length"/>
+          <ComboBox x:Name="LengthDropdown"/>
+        </StackPanel>
+      </Grid>
+
+      <TextBlock Text="Instructions (optional)"/>
+      <TextBox x:Name="UserInput"
+               AcceptsReturn="True"
+               TextWrapping="Wrap"
+               Height="120"
+               Watermark="Add names, dates, specific facts, or formatting preferences. The more detail you provide, the more tailored your draft will be."/>
+
+      <TextBlock Text="Model Preference" FontWeight="Bold"/>
+      <TextBlock Text="Choose your preferred response mode. 'Faster' gives quicker drafts. 'Detailed' may take longer, but produces richer letters." FontStyle="Italic" FontSize="12"/>
+      <StackPanel Orientation="Horizontal" Spacing="20">
+        <RadioButton x:Name="FasterRadio" Content="Faster Response" IsChecked="True"/>
+        <RadioButton x:Name="DetailedRadio" Content="More Detailed (Slower)"/>
+      </StackPanel>
+
+      <TextBlock Text="Preview"/>
+      <ScrollViewer Height="200">
+        <TextBox x:Name="PreviewBox" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap"/>
+      </ScrollViewer>
+
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+        <Button Content="Generate" Click="OnGenerateClick" Width="100"/>
+        <Button Content="Save" Click="OnSaveClick" Width="100"/>
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

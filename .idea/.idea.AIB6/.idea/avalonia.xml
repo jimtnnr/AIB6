@@ -3,6 +3,7 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="AIB6/LetterTab.axaml" value="AIB6/AIB6.csproj" />
         <entry key="AIB6/MainWindow.axaml" value="AIB6/AIB6.csproj" />
       </map>
     </option>
