@@ -1,20 +1,37 @@
 ﻿using Avalonia;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
 
-namespace AIB6;
-
-class Program
+namespace AIB6
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
-    [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static class Program
+    {
+        public static IConfiguration Configuration { get; private set; }
+        public static AppSettings AppSettings { get; private set; }
 
-    // Avalonia configuration, don't remove; also used by visual designer.
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-            .UsePlatformDetect()
-            .WithInterFont()
-            .LogToTrace();
+        [STAThread]
+        public static void Main(string[] args)
+        {
+            // Load appsettings.json from the project root
+            Configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+
+            // Bind to AppSettings model
+            AppSettings = new AppSettings();
+            Configuration.Bind(AppSettings);
+
+            // Continue to Avalonia
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+
+        // Avalonia configuration, used by visual designer as well
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace();
+    }
 }

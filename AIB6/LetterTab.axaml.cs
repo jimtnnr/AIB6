@@ -14,12 +14,24 @@ namespace AIB6
 {
     public partial class LetterTab : UserControl
     {
-        private string _selectedModel = "mistral";
-        private string _apiUrl = "http://localhost:11434/api/generate";
+        private string _selectedModel;
+        private string _apiUrl;
 
         public LetterTab()
         {
             InitializeComponent();
+
+            var defaultModelKey = Program.AppSettings.ModelSettings.DefaultModel;
+            if (defaultModelKey == "mixtral")
+            {
+                _selectedModel = Program.AppSettings.ModelSettings.Mixtral.ModelName;
+                _apiUrl = Program.AppSettings.ModelSettings.Mixtral.Endpoint;
+            }
+            else
+            {
+                _selectedModel = Program.AppSettings.ModelSettings.Mistral.ModelName;
+                _apiUrl = Program.AppSettings.ModelSettings.Mistral.Endpoint;
+            }
 
             LetterTypeDropdown.ItemsSource = new[] { "Notice", "Demand", "Inquiry", "Confirmation" };
             ToneDropdown.ItemsSource = new[] { "Friendly", "Professional", "Stern" };
@@ -32,10 +44,18 @@ namespace AIB6
             LengthDropdown.SelectedIndex = 1;
 
             if (FasterRadio != null)
-                FasterRadio.Checked += (_, _) => { _selectedModel = "mistral"; _apiUrl = "http://localhost:11434/api/generate"; };
+                FasterRadio.Checked += (_, _) =>
+                {
+                    _selectedModel = Program.AppSettings.ModelSettings.Mistral.ModelName;
+                    _apiUrl = Program.AppSettings.ModelSettings.Mistral.Endpoint;
+                };
 
             if (DetailedRadio != null)
-                DetailedRadio.Checked += (_, _) => { _selectedModel = "mixtral"; _apiUrl = "http://localhost:11435/api/generate"; };
+                DetailedRadio.Checked += (_, _) =>
+                {
+                    _selectedModel = Program.AppSettings.ModelSettings.Mixtral.ModelName;
+                    _apiUrl = Program.AppSettings.ModelSettings.Mixtral.Endpoint;
+                };
         }
 
         private async Task<string> CallLlmAsync(string prompt)
@@ -95,21 +115,26 @@ namespace AIB6
 
             var prompt = $"Generate a {length}, {formality}, {tone} letter of type '{letterType}'. {userInput}";
 
+            StatusText.Text = "Generating draft...";
             PreviewBox.Text = "Generating draft...";
             var result = await CallLlmAsync(prompt);
             PreviewBox.Text = result;
+            StatusText.Text = "Draft ready.";
         }
 
         private async void OnSaveClick(object? sender, RoutedEventArgs e)
         {
             string filename = $"letter_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
-            string exportPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AIBDOCS");
+            string exportPath = Environment.ExpandEnvironmentVariables(Program.AppSettings.Paths.ExportFolder);
             Directory.CreateDirectory(exportPath);
 
             string fullPath = Path.Combine(exportPath, filename);
             await File.WriteAllTextAsync(fullPath, PreviewBox.Text);
-
-            await PostgresHelper.InsertLetterAsync(filename, "Letter", DateTime.UtcNow, false, false);
+            var letterType = LetterTypeDropdown.SelectedItem?.ToString() ?? "Letter";
+            await PostgresHelper.InsertLetterAsync(filename, letterType, DateTime.UtcNow, false, false);
+            StatusText.Text = "Letter saved successfully.";
+            await Task.Delay(3000);
+            StatusText.Text = string.Empty;
         }
     }
 }
