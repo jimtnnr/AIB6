@@ -1,19 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:AIB6"
+        xmlns:aib6="clr-namespace:AIB6"
         x:Class="AIB6.MainWindow"
-        Title="AIB6" Width="900" Height="750"
-        WindowStartupLocation="CenterScreen"
-        >
+        Width="1000"
+        Height="800"
+        Title="Letter Writer"
+        Background="#ECF4FA">
+
+  <Window.Styles>
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="16"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="#2B2B2B"/>
+    </Style>
+  </Window.Styles>
 
   <TabControl>
     <TabItem Header="Create Drafts">
-      <local:LetterTab />
+      <aib6:LetterTab />
     </TabItem>
     <TabItem Header="Review Drafts">
       <TextBlock Text="(Archive grid will go here)" Margin="20"/>
     </TabItem>
   </TabControl>
-
 </Window>
 

@@ -1,50 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="AIB6.LetterTab">
-    <StackPanel Margin="20" Spacing="10">
-        <TextBlock Text="Letter Generator" FontSize="24" FontWeight="Bold"/>
+             x:Class="AIB6.LetterTab"
+             Background="#ECF4FA">
 
-        <!-- Dropdowns in one horizontal row -->
-        <Grid ColumnDefinitions="*,*,*,*">
-            <StackPanel Grid.Column="0" Spacing="4">
-                <TextBlock Text="Letter Type"/>
-                <ComboBox x:Name="LetterTypeDropdown"/>
-            </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="4">
-                <TextBlock Text="Tone"/>
-                <ComboBox x:Name="ToneDropdown"/>
-            </StackPanel>
-            <StackPanel Grid.Column="2" Spacing="4">
-                <TextBlock Text="Formality"/>
-                <ComboBox x:Name="FormalityDropdown"/>
-            </StackPanel>
-            <StackPanel Grid.Column="3" Spacing="4">
-                <TextBlock Text="Length"/>
-                <ComboBox x:Name="LengthDropdown"/>
-            </StackPanel>
-        </Grid>
+  <UserControl.Styles>
+    <Style Selector="Button.orange-button">
+      <Setter Property="Background" Value="#F7630C"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="Padding" Value="12,6"/>
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="ComboBox.clean-combo">
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="Foreground" Value="#2B2B2B"/>
+      <Setter Property="BorderBrush" Value="#D0D0D0"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Margin" Value="2"/>
+      <Setter Property="Width" Value="120"/>
+    </Style>
+  </UserControl.Styles>
 
-        <TextBlock Text="Instructions (optional)"/>
-        <TextBox x:Name="UserInput" AcceptsReturn="True" Height="100" Watermark="Additional details..."/>
-
-        <TextBlock Text="Model Preference" FontWeight="Bold"/>
-        <TextBlock FontStyle="Italic" Text="Choose your preferred response mode. 'Faster' gives quicker drafts. 'Detailed' may take longer, but produces richer letters." TextWrapping="Wrap"/>
-
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <RadioButton x:Name="FasterRadio" Content="Faster Response" IsChecked="True"/>
-            <RadioButton x:Name="DetailedRadio" Content="More Detailed (Slower)"/>
-        </StackPanel>
-
-        <TextBlock Text="Preview" Margin="0,10,0,0"/>
-        <TextBox x:Name="PreviewBox" AcceptsReturn="True" Height="200" TextWrapping="Wrap"/>
-
-        <TextBlock x:Name="StatusText" FontStyle="Italic" Foreground="Gray"/>
-
-        <StackPanel Orientation="Horizontal" Spacing="10">
-            <Button Content="Generate Draft" Click="OnGenerateClick"/>
-            <Button Content="Save Draft" Click="OnSaveClick"/>
-        </StackPanel>
+  <StackPanel Margin="20" Spacing="10">
+    <StackPanel Orientation="Horizontal" Spacing="20">
+      <StackPanel>
+        <TextBlock Text="Letter Type" FontWeight="Bold"/>
+        <ComboBox x:Name="LetterTypeDropdown" Classes="clean-combo"/>
+      </StackPanel>
+      <StackPanel>
+        <TextBlock Text="Tone" FontWeight="Bold"/>
+        <ComboBox x:Name="ToneDropdown" Classes="clean-combo"/>
+      </StackPanel>
+      <StackPanel>
+        <TextBlock Text="Formality" FontWeight="Bold"/>
+        <ComboBox x:Name="FormalityDropdown" Classes="clean-combo"/>
+      </StackPanel>
+      <StackPanel>
+        <TextBlock Text="Length" FontWeight="Bold"/>
+        <ComboBox x:Name="LengthDropdown" Classes="clean-combo"/>
+      </StackPanel>
+    </StackPanel>
+    <TextBlock Text="Additional Context" FontWeight="Bold"/>
+    <TextBox x:Name="UserInput"
+             Watermark="Enter additional context here..."
+             AcceptsReturn="True"
+             Height="100"
+             Background="White"
+             Foreground="#2B2B2B"
+             BorderBrush="#D0D0D0"
+             BorderThickness="1"
+             FontSize="14"/>
+    <StackPanel Orientation="Horizontal" Spacing="10">
+      <RadioButton x:Name="FasterRadio" Content="Faster Response" IsChecked="True"/>
+      <RadioButton x:Name="DetailedRadio" Content="More Detailed"/>
+    </StackPanel>
+    <TextBlock Text="Model Preference" FontWeight="Bold"/>
+    <StackPanel Orientation="Horizontal" Spacing="10">
+      <Button x:Name="GenerateButton" Content="Generate Draft" Classes="orange-button" Click="OnGenerateClick"/>
+      <Button x:Name="SaveButton" Content="Save Draft" Classes="orange-button" Click="OnSaveClick"/>
     </StackPanel>
 
+    <TextBlock x:Name="StatusText" Foreground="#0078D4" FontStyle="Italic"/>
 
+    <TextBlock Text="Draft Preview" FontWeight="Bold"/>
+    <TextBox x:Name="PreviewBox"
+             AcceptsReturn="True"
+             IsReadOnly="True"
+             Height="300"
+             Background="White"
+             Foreground="#2B2B2B"
+             BorderBrush="#D0D0D0"
+             BorderThickness="1"
+             FontSize="14"
+             TextWrapping="Wrap"/>
+  </StackPanel>
 </UserControl>
