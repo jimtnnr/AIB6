@@ -52,11 +52,12 @@
              BorderBrush="#D0D0D0"
              BorderThickness="1"
              FontSize="14"/>
+    <TextBlock Text="Model Preference" FontWeight="Bold"/>
     <StackPanel Orientation="Horizontal" Spacing="10">
       <RadioButton x:Name="FasterRadio" Content="Faster Response" IsChecked="True"/>
       <RadioButton x:Name="DetailedRadio" Content="More Detailed"/>
     </StackPanel>
-    <TextBlock Text="Model Preference" FontWeight="Bold"/>
+
     <StackPanel Orientation="Horizontal" Spacing="10">
       <Button x:Name="GenerateButton" Content="Generate Draft" Classes="orange-button" Click="OnGenerateClick"/>
       <Button x:Name="SaveButton" Content="Save Draft" Classes="orange-button" Click="OnSaveClick"/>
