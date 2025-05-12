@@ -128,7 +128,12 @@ namespace AIB6
             string safeType = letterType.Replace(" ", "_").ToLower();
             string filename = $"{safeType}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
 
-            string exportPath = Environment.ExpandEnvironmentVariables(Program.AppSettings.Paths.ExportFolder);
+            string exportPath = Program.AppSettings.Paths.ExportFolder;
+            if (exportPath.StartsWith("~"))
+            {
+                exportPath = exportPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            }
+
             Directory.CreateDirectory(exportPath);
 
             string fullPath = Path.Combine(exportPath, filename);
@@ -140,6 +145,7 @@ namespace AIB6
             await Task.Delay(3000);
             StatusText.Text = string.Empty;
         }
+
 
     }
 }
