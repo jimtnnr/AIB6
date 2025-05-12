@@ -134,7 +134,7 @@ namespace AIB6
             string fullPath = Path.Combine(exportPath, filename);
             await File.WriteAllTextAsync(fullPath, PreviewBox.Text);
 
-            await PostgresHelper.InsertLetterAsync(filename, letterType, DateTime.UtcNow, false, false);
+            await PostgresHelper.InsertLetterAsync(filename, letterType, DateTime.Now, false, false);
 
             StatusText.Text = "Letter saved successfully.";
             await Task.Delay(3000);

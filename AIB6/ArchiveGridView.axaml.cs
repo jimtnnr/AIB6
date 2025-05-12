@@ -17,7 +17,7 @@ namespace AIB6
     public partial class ArchiveGridView : UserControl
     {
         private int _currentPage = 1;
-        private const int PageSize = 12;
+        private const int PageSize = 15;
         private string _sortColumn = "timestamp";
         private string _sortDirection = "DESC";
         private string _filter = "";
