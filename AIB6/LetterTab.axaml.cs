@@ -21,7 +21,8 @@ namespace AIB6
         public LetterTab()
         {
             InitializeComponent();
-
+            SaveButton.IsEnabled = false;
+            GenerateButton.IsEnabled = true;
             var defaultModelKey = Program.AppSettings.ModelSettings.DefaultModel;
             if (defaultModelKey == "mixtral")
             {
@@ -123,6 +124,7 @@ namespace AIB6
             StatusText.Text = "Draft ready.";
             _letterGenerated = true;
             SaveButton.IsEnabled = true;
+            GenerateButton.IsEnabled = false;
         }
 
         private async void OnSaveClick(object? sender, RoutedEventArgs e)
@@ -154,8 +156,9 @@ namespace AIB6
             await PostgresHelper.InsertLetterAsync(filename, letterType, DateTime.Now, false, false);
             StatusText.Text = string.Empty;
             StatusText.Text = "Letter saved successfully.";
-            SaveButton.IsEnabled = true;
-            PreviewBox.Text = "Letter successfully sent to draft archive.";
+            SaveButton.IsEnabled = false;
+            GenerateButton.IsEnabled = true;
+            PreviewBox.Text = "Letter successfully sent to draft review.";
             await Task.Delay(4000);
             StatusText.Text = string.Empty;
             PreviewBox.Text = string.Empty;
