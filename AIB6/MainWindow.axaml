@@ -21,7 +21,7 @@
       <aib6:LetterTab />
     </TabItem>
     <TabItem Header="Review Drafts">
-      <TextBlock Text="(Archive grid will go here)" Margin="20"/>
+      <aib6:ArchiveGridView />
     </TabItem>
   </TabControl>
 </Window>
