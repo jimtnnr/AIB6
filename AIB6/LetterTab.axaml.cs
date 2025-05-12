@@ -156,7 +156,7 @@ namespace AIB6
             StatusText.Text = "Letter saved successfully.";
             SaveButton.IsEnabled = true;
             PreviewBox.Text = "Letter successfully sent to draft archive.";
-            await Task.Delay(3000);
+            await Task.Delay(4000);
             StatusText.Text = string.Empty;
             PreviewBox.Text = string.Empty;
         }
