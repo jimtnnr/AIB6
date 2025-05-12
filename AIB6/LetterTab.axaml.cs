@@ -124,17 +124,22 @@ namespace AIB6
 
         private async void OnSaveClick(object? sender, RoutedEventArgs e)
         {
-            string filename = $"letter_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            var letterType = LetterTypeDropdown.SelectedItem?.ToString() ?? "Letter";
+            string safeType = letterType.Replace(" ", "_").ToLower();
+            string filename = $"{safeType}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+
             string exportPath = Environment.ExpandEnvironmentVariables(Program.AppSettings.Paths.ExportFolder);
             Directory.CreateDirectory(exportPath);
 
             string fullPath = Path.Combine(exportPath, filename);
             await File.WriteAllTextAsync(fullPath, PreviewBox.Text);
-            var letterType = LetterTypeDropdown.SelectedItem?.ToString() ?? "Letter";
+
             await PostgresHelper.InsertLetterAsync(filename, letterType, DateTime.UtcNow, false, false);
+
             StatusText.Text = "Letter saved successfully.";
             await Task.Delay(3000);
             StatusText.Text = string.Empty;
         }
+
     }
 }
