@@ -194,17 +194,30 @@ namespace AIB6
                 };
                 star.PointerPressed += async (_, _) =>
                 {
-                    await ToggleFavorite(row.id, !row.favorite);
-                    await LoadPage(_currentPage);
+                    int currentPage = _currentPage;
+                    int pinnedId = row.id;
+
+                    await ToggleFavorite(pinnedId, !row.favorite);
+                    await LoadPage(currentPage);
+
+                    // Optional: scroll or highlight pinnedId row
                 };
+
                 AddCell(star, 2);
 
                 var hiddenCheck = new CheckBox { IsChecked = row.hidden, HorizontalAlignment = HorizontalAlignment.Center };
                 hiddenCheck.IsCheckedChanged += async (sender, _) =>
                 {
                     if (sender is CheckBox cb)
-                        await ToggleHidden(row.id, cb.IsChecked == true);
+                    {
+                        int pinnedId = row.id;
+                        int currentPage = _currentPage;
+
+                        await ToggleHidden(pinnedId, cb.IsChecked == true);
+                        await LoadPage(currentPage);
+                    }
                 };
+
                 AddCell(hiddenCheck, 3);
 
                 var previewLink = new TextBlock
