@@ -16,6 +16,7 @@ namespace AIB6
     {
         private string _selectedModel;
         private string _apiUrl;
+        private bool _letterGenerated = false;
 
         public LetterTab()
         {
@@ -114,12 +115,14 @@ namespace AIB6
             var userInput = UserInput.Text ?? "";
 
             var prompt = $"Generate a {length}, {formality}, {tone} letter of type '{letterType}'. {userInput}";
-
+            SaveButton.IsEnabled = false;
             StatusText.Text = "Generating draft...";
             PreviewBox.Text = "Generating draft...";
             var result = await CallLlmAsync(prompt);
             PreviewBox.Text = result;
             StatusText.Text = "Draft ready.";
+            _letterGenerated = true;
+            SaveButton.IsEnabled = true;
         }
 
         private async void OnSaveClick(object? sender, RoutedEventArgs e)
@@ -127,7 +130,16 @@ namespace AIB6
             var letterType = LetterTypeDropdown.SelectedItem?.ToString() ?? "Letter";
             string safeType = letterType.Replace(" ", "_").ToLower();
             string filename = $"{safeType}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
-
+            
+            if (!_letterGenerated)
+            {
+                StatusText.Text = "Please generate a letter first.";
+                await Task.Delay(3000);
+                StatusText.Text = string.Empty;
+                return;
+            }
+            SaveButton.IsEnabled = false;
+            _letterGenerated = false;
             string exportPath = Program.AppSettings.Paths.ExportFolder;
             if (exportPath.StartsWith("~"))
             {
@@ -140,10 +152,13 @@ namespace AIB6
             await File.WriteAllTextAsync(fullPath, PreviewBox.Text);
 
             await PostgresHelper.InsertLetterAsync(filename, letterType, DateTime.Now, false, false);
-
+            StatusText.Text = string.Empty;
             StatusText.Text = "Letter saved successfully.";
+            SaveButton.IsEnabled = true;
             await Task.Delay(3000);
             StatusText.Text = string.Empty;
+            
+
         }
 
 
