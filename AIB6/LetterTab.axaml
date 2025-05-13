@@ -27,19 +27,19 @@
     <StackPanel Orientation="Horizontal" Spacing="20">
       <StackPanel>
         <TextBlock Text="Letter Type" FontWeight="Bold"/>
-        <ComboBox x:Name="LetterTypeDropdown" Classes="clean-combo"/>
+        <ComboBox x:Name="LetterTypeDropdown" Width="200" Classes="clean-combo"/>
+      </StackPanel>
+      <StackPanel>
+        <TextBlock Text="Letter Sub-Type" FontWeight="Bold"/>
+        <ComboBox x:Name="FormalityDropdown" Width="300" Classes="clean-combo"/>
       </StackPanel>
       <StackPanel>
         <TextBlock Text="Tone" FontWeight="Bold"/>
-        <ComboBox x:Name="ToneDropdown" Classes="clean-combo"/>
-      </StackPanel>
-      <StackPanel>
-        <TextBlock Text="Formality" FontWeight="Bold"/>
-        <ComboBox x:Name="FormalityDropdown" Classes="clean-combo"/>
+        <ComboBox x:Name="ToneDropdown" Width="180" Classes="clean-combo"/>
       </StackPanel>
       <StackPanel>
         <TextBlock Text="Length" FontWeight="Bold"/>
-        <ComboBox x:Name="LengthDropdown" Classes="clean-combo"/>
+        <ComboBox x:Name="LengthDropdown" Width="180" Classes="clean-combo"/>
       </StackPanel>
     </StackPanel>
     <TextBlock Text="Additional Context" FontWeight="Bold"/>
