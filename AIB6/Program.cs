@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
+using AIB6.Helpers;
 
 namespace AIB6
 {
@@ -22,9 +23,11 @@ namespace AIB6
             // Bind to AppSettings model
             AppSettings = new AppSettings();
             Configuration.Bind(AppSettings);
+            PromptTemplateRegistry.Load(Program.AppSettings.Paths.PromptTemplatesFile);
 
             // Continue to Avalonia
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+         
         }
 
         // Avalonia configuration, used by visual designer as well

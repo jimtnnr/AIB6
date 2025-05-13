@@ -34,15 +34,20 @@ namespace AIB6
                 _selectedModel = Program.AppSettings.ModelSettings.Mistral.ModelName;
                 _apiUrl = Program.AppSettings.ModelSettings.Mistral.Endpoint;
             }
+            LetterTypeDropdown.ItemsSource = PromptTemplateRegistry.GetAllMainTypes();
+            if (LetterTypeDropdown.Items.Count > 0)
+                LetterTypeDropdown.SelectedIndex = 0;
+            OnLetterTypeChanged(LetterTypeDropdown, null);
 
-            LetterTypeDropdown.ItemsSource = new[] { "Notice", "Demand", "Inquiry", "Confirmation" };
+            //LetterTypeDropdown.ItemsSource = new[] { "Notice", "Demand", "Inquiry", "Confirmation" };
             ToneDropdown.ItemsSource = new[] { "Friendly", "Professional", "Stern" };
-            FormalityDropdown.ItemsSource = new[] { "Casual", "Neutral", "Formal" };
+            //FormalityDropdown.ItemsSource = PromptTemplateRegistry.GetSubTypesForMainType("Complaint").Select(s => s.Label).ToList();
+
             LengthDropdown.ItemsSource = new[] { "Short", "Medium", "Long" };
 
-            LetterTypeDropdown.SelectedIndex = 0;
+            LetterTypeDropdown.SelectionChanged += OnLetterTypeChanged;
+
             ToneDropdown.SelectedIndex = 1;
-            FormalityDropdown.SelectedIndex = 1;
             LengthDropdown.SelectedIndex = 1;
 
             if (FasterRadio != null)
@@ -109,13 +114,31 @@ namespace AIB6
 
         private async void OnGenerateClick(object? sender, RoutedEventArgs e)
         {
-            var letterType = LetterTypeDropdown.SelectedItem?.ToString() ?? "";
+            var mainType = LetterTypeDropdown.SelectedItem?.ToString() ?? "";
+            var subTypeLabel = FormalityDropdown.SelectedItem?.ToString() ?? "";
             var tone = ToneDropdown.SelectedItem?.ToString() ?? "";
-            var formality = FormalityDropdown.SelectedItem?.ToString() ?? "";
             var length = LengthDropdown.SelectedItem?.ToString() ?? "";
             var userInput = UserInput.Text ?? "";
 
-            var prompt = $"Generate a {length}, {formality}, {tone} letter of type '{letterType}'. {userInput}";
+// Look up template
+            var template = PromptTemplateRegistry.GetSubTypesForMainType(mainType)
+                .FirstOrDefault(t => t.Label == subTypeLabel);
+
+            if (template == null)
+            {
+                StatusText.Text = "Template not found.";
+                return;
+            }
+
+            var fullTemplate = PromptTemplateRegistry.GetTemplate(mainType, template.Id);
+            if (fullTemplate == null)
+            {
+                StatusText.Text = "Prompt template unavailable.";
+                return;
+            }
+
+            var prompt = fullTemplate.FillPrompt(userInput, tone, length);
+
             SaveButton.IsEnabled = false;
             StatusText.Text = "Generating draft...";
             PreviewBox.Text = "Generating draft...";
@@ -163,6 +186,20 @@ namespace AIB6
             StatusText.Text = string.Empty;
             PreviewBox.Text = string.Empty;
         }
+        private void OnLetterTypeChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            var selectedMainType = LetterTypeDropdown.SelectedItem?.ToString();
+            if (string.IsNullOrWhiteSpace(selectedMainType)) return;
+
+            var subTypes = PromptTemplateRegistry.GetSubTypesForMainType(selectedMainType);
+            var subTypeLabels = subTypes.Select(s => s.Label).ToList();
+
+            FormalityDropdown.ItemsSource = subTypeLabels;
+
+            if (subTypeLabels.Count > 0)
+                FormalityDropdown.SelectedIndex = 0;
+        }
+
 
 
     }
