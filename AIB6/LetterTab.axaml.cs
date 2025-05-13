@@ -46,6 +46,7 @@ namespace AIB6
             LengthDropdown.ItemsSource = new[] { "Short", "Medium", "Long" };
 
             LetterTypeDropdown.SelectionChanged += OnLetterTypeChanged;
+            FormalityDropdown.SelectionChanged += OnSubTypeChanged;
 
             ToneDropdown.SelectedIndex = 1;
             LengthDropdown.SelectedIndex = 1;
@@ -198,7 +199,35 @@ namespace AIB6
 
             if (subTypeLabels.Count > 0)
                 FormalityDropdown.SelectedIndex = 0;
+
+            // Load first subType's scaffold as watermark
+            var selectedSub = subTypes.FirstOrDefault();
+            if (selectedSub != null)
+            {
+                var template = PromptTemplateRegistry.GetTemplate(selectedMainType, selectedSub.Id);
+                if (template != null)
+                    UserInput.Watermark = template.InputScaffold;
+            }
         }
+        private void OnSubTypeChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            var mainType = LetterTypeDropdown.SelectedItem?.ToString();
+            var subTypeLabel = FormalityDropdown.SelectedItem?.ToString();
+
+            if (string.IsNullOrWhiteSpace(mainType) || string.IsNullOrWhiteSpace(subTypeLabel))
+                return;
+
+            var match = PromptTemplateRegistry.GetSubTypesForMainType(mainType)
+                .FirstOrDefault(x => x.Label == subTypeLabel);
+
+            if (match != null)
+            {
+                var template = PromptTemplateRegistry.GetTemplate(mainType, match.Id);
+                if (template != null)
+                    UserInput.Watermark = template.InputScaffold;
+            }
+        }
+
 
 
 
