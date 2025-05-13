@@ -35,11 +35,11 @@
       </StackPanel>
       <StackPanel>
         <TextBlock Text="Tone" FontWeight="Bold"/>
-        <ComboBox x:Name="ToneDropdown" Width="180" Classes="clean-combo"/>
+        <ComboBox x:Name="ToneDropdown" Width="160" Classes="clean-combo"/>
       </StackPanel>
       <StackPanel>
         <TextBlock Text="Length" FontWeight="Bold"/>
-        <ComboBox x:Name="LengthDropdown" Width="180" Classes="clean-combo"/>
+        <ComboBox x:Name="LengthDropdown" Width="200" Classes="clean-combo"/>
       </StackPanel>
     </StackPanel>
     <TextBlock Text="Additional Context" FontWeight="Bold"/>

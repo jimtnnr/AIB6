@@ -43,13 +43,21 @@ namespace AIB6
             ToneDropdown.ItemsSource = new[] { "Friendly", "Professional", "Stern" };
             //FormalityDropdown.ItemsSource = PromptTemplateRegistry.GetSubTypesForMainType("Complaint").Select(s => s.Label).ToList();
 
-            LengthDropdown.ItemsSource = new[] { "Short", "Medium", "Long" };
+            LengthDropdown.ItemsSource = new[]
+            {
+                "Brief (~150 words)",
+                "Short (~300 words)",
+                "Medium (~500 words)",
+                "Extended (~750 words)",
+                "Full (~1000 words)"
+            };
+
 
             LetterTypeDropdown.SelectionChanged += OnLetterTypeChanged;
             FormalityDropdown.SelectionChanged += OnSubTypeChanged;
 
             ToneDropdown.SelectedIndex = 1;
-            LengthDropdown.SelectedIndex = 1;
+            LengthDropdown.SelectedIndex = 2;
 
             if (FasterRadio != null)
                 FasterRadio.Checked += (_, _) =>
@@ -118,7 +126,9 @@ namespace AIB6
             var mainType = LetterTypeDropdown.SelectedItem?.ToString() ?? "";
             var subTypeLabel = FormalityDropdown.SelectedItem?.ToString() ?? "";
             var tone = ToneDropdown.SelectedItem?.ToString() ?? "";
-            var length = LengthDropdown.SelectedItem?.ToString() ?? "";
+            var rawLength = LengthDropdown.SelectedItem?.ToString() ?? "";
+            var length = rawLength.Split('(')[0].Trim(); // Gets "Medium" from "Medium (~500 words)"
+
             var userInput = UserInput.Text ?? "";
 
 // Look up template
