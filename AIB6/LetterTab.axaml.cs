@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -9,6 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using AIB6;
 using AIB6.Helpers;
+using Avalonia.Threading;
 
 namespace AIB6
 {
@@ -101,17 +103,20 @@ namespace AIB6
                     Content = JsonContent.Create(requestBody)
                 };
 
-                var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-                response.EnsureSuccessStatusCode();
-
-                await using var stream = await response.Content.ReadAsStreamAsync();
+               // var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+               // response.EnsureSuccessStatusCode();
+                var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                
                 using var reader = new StreamReader(stream);
 
                 var fullResponse = new StringBuilder();
 
                 while (!reader.EndOfStream)
                 {
-                    var line = await reader.ReadLineAsync();
+                   // var line = await reader.ReadLineAsync();
+                    var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
                     if (string.IsNullOrWhiteSpace(line)) continue;
 
                     try
@@ -142,61 +147,75 @@ namespace AIB6
         }
 
 
-        private async void OnGenerateClick(object? sender, RoutedEventArgs e)
+private async void OnGenerateClick(object? sender, RoutedEventArgs e)
+{
+    var mainType = LetterTypeDropdown.SelectedItem?.ToString() ?? "";
+    var subTypeLabel = FormalityDropdown.SelectedItem?.ToString() ?? "";
+    var toneLabel = ToneDropdown.SelectedItem?.ToString() ?? "";
+    var rawLength = LengthDropdown.SelectedItem?.ToString() ?? "";
+    var lengthLabel = rawLength.Split('(')[0].Trim();
+
+    var tone = PromptMappings.MapTone(toneLabel);
+    var length = PromptMappings.MapLength(lengthLabel);
+    var userInput = UserInput.Text ?? "";
+
+    var templateInfo = PromptTemplateRegistry.GetSubTypesForMainType(mainType)
+        .FirstOrDefault(t => t.Label == subTypeLabel);
+
+    if (templateInfo == null)
+    {
+        StatusText.Text = "Template not found.";
+        return;
+    }
+
+    var fullTemplate = PromptTemplateRegistry.GetTemplate(mainType, templateInfo.Id);
+    if (fullTemplate == null)
+    {
+        StatusText.Text = "Prompt template unavailable.";
+        return;
+    }
+
+    var prompt = fullTemplate.FillPrompt(userInput, tone, length, mainType, templateInfo.Id);
+    Console.Write(prompt);
+
+    LetterTypeDropdown.SelectedItem = LetterTypeDropdown.SelectedItem;
+    FormalityDropdown.SelectedItem = FormalityDropdown.SelectedItem;
+    ToneDropdown.SelectedItem = ToneDropdown.SelectedItem;
+    LengthDropdown.SelectedItem = LengthDropdown.SelectedItem;
+
+    GenerateButton.IsEnabled = false;
+    SaveButton.IsEnabled = false;
+    PreviewBox.Text = "Generating draft...";
+
+    var stopwatch = Stopwatch.StartNew();
+    var cancel = false;
+
+    // UI-safe live timer
+    _ = Task.Run(async () =>
+    {
+        while (!cancel)
         {
-            var mainType = LetterTypeDropdown.SelectedItem?.ToString() ?? "";
-            var subTypeLabel = FormalityDropdown.SelectedItem?.ToString() ?? "";
-
-            var toneLabel = ToneDropdown.SelectedItem?.ToString() ?? "";
-            var rawLength = LengthDropdown.SelectedItem?.ToString() ?? "";
-            var lengthLabel = rawLength.Split('(')[0].Trim(); // "Medium" from "Medium (~500 words)"
-
-            var tone = PromptMappings.MapTone(toneLabel);
-            var length = PromptMappings.MapLength(lengthLabel);
-            var userInput = UserInput.Text ?? "";
-
-            var templateInfo = PromptTemplateRegistry.GetSubTypesForMainType(mainType)
-                .FirstOrDefault(t => t.Label == subTypeLabel);
-
-            if (templateInfo == null)
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                StatusText.Text = "Template not found.";
-                return;
-            }
-
-            var fullTemplate = PromptTemplateRegistry.GetTemplate(mainType, templateInfo.Id);
-            if (fullTemplate == null)
-            {
-                StatusText.Text = "Prompt template unavailable.";
-                return;
-            }
-
-// Reject empty input or scaffold reuse
-          //  if (string.IsNullOrWhiteSpace(userInput) || userInput.Trim() == UserInput.Watermark.Trim())
-            //{
-            //    StatusText.Text = "Please enter actual details before generating.";
-           //     return;
-        //    }
-
-
-            var prompt = fullTemplate.FillPrompt(userInput, tone, length, mainType, templateInfo.Id);
-            Console.Write(prompt);
-            // Reassert dropdown selections to stabilize state
-            LetterTypeDropdown.SelectedItem = LetterTypeDropdown.SelectedItem;
-            FormalityDropdown.SelectedItem = FormalityDropdown.SelectedItem;
-            ToneDropdown.SelectedItem = ToneDropdown.SelectedItem;
-            LengthDropdown.SelectedItem = LengthDropdown.SelectedItem;
-            GenerateButton.IsEnabled = false;
-            SaveButton.IsEnabled = false;
-            StatusText.Text = "Generating draft...";
-            PreviewBox.Text = "Generating draft...";
-            var result = await CallLlmAsync(prompt);
-            PreviewBox.Text = result;
-            StatusText.Text = "Draft ready.";
-            _letterGenerated = true;
-            SaveButton.IsEnabled = true;
-            GenerateButton.IsEnabled = false;
+                StatusText.Text = $"Generating draft... ({stopwatch.Elapsed.Seconds}s)";
+            });
+            await Task.Delay(1000);
         }
+    });
+
+    //var result = await CallLlmAsync(prompt);
+    var result = await Task.Run(() => CallLlmAsync(prompt));
+
+    stopwatch.Stop();
+    cancel = true;
+
+    PreviewBox.Text = result;
+    StatusText.Text = $"Draft ready. ({stopwatch.Elapsed.Seconds}s)";
+    _letterGenerated = true;
+    SaveButton.IsEnabled = true;
+    GenerateButton.IsEnabled = false;
+}
+
 
         private async void OnSaveClick(object? sender, RoutedEventArgs e)
         {
