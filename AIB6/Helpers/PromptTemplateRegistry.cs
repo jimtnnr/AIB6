@@ -30,11 +30,11 @@ namespace AIB6.Helpers
             return _templates.Select(t => t.MainType).Distinct().ToList();
         }
 
-        public static List<SubTypeInfo> GetSubTypesForMainType(string mainType)
+        public static List<PromptTemplate.SubTypeInfo> GetSubTypesForMainType(string mainType)
         {
             return _templates
                 .Where(t => t.MainType == mainType)
-                .Select(t => new SubTypeInfo { Id = t.SubType, Label = t.Label })
+                .Select(t => new PromptTemplate.SubTypeInfo { Id = t.SubType, Label = t.Label })
                 .ToList();
         }
 
@@ -46,32 +46,50 @@ namespace AIB6.Helpers
 
     public class PromptTemplate
     {
-        public string MainType { get; set; } = "";
-        public string SubType { get; set; } = "";
-        public string Label { get; set; } = "";
-        public string Structure { get; set; } = "";
-        public string InputScaffold { get; set; } = "";
+        public string MainType { get; set; } = string.Empty;
+        public string SubType { get; set; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
+        public string Structure { get; set; } = string.Empty;
+        public string Intent { get; set; } = string.Empty;
+        public string InputScaffold { get; set; } = string.Empty;
         public List<LengthOption> LengthOptions { get; set; } = new();
-        public string PromptTemplateText { get; set; } = "";
+        public Dictionary<string, string> ToneDirectives { get; set; } = new();
+        public string PromptTemplateText { get; set; } = string.Empty;
+        public string RoleInstruction { get; set; } = string.Empty;
 
-        public string FillPrompt(string userInput, string tone, string length)
+        public string FillPrompt(string userInput, string toneLabel, string length, string mainType, string subType)
         {
+            var toneDirective = ToneDirectives.TryGetValue(toneLabel, out var result) ? result : toneLabel;
+
+            var facts = string.IsNullOrWhiteSpace(userInput)
+                ? "[Who] was involved\n[What] happened\n[When] it occurred\n[Where] it occurred\n[Why] this letter is being sent"
+                : userInput;
+
+            var role = string.IsNullOrWhiteSpace(RoleInstruction)
+                ? "You are a professional preparing a formal letter."
+                : RoleInstruction;
+
             return PromptTemplateText
-                .Replace("{UserInput}", userInput)
-                .Replace("{Tone}", tone)
-                .Replace("{Length}", length);
+                .Replace("{UserInput}", facts)
+                .Replace("{Tone}", toneDirective)
+                .Replace("{Length}", length)
+                .Replace("{Structure}", Structure)
+                .Replace("{Intent}", Intent)
+                .Replace("{MainType}", mainType)
+                .Replace("{SubType}", subType)
+                .Replace("{Role}", role);
         }
-    }
 
-    public class LengthOption
-    {
-        public string Label { get; set; } = "";
-        public int Words { get; set; }
-    }
+        public class LengthOption
+        {
+            public string Label { get; set; } = string.Empty;
+            public int Words { get; set; }
+        }
 
-    public class SubTypeInfo
-    {
-        public string Id { get; set; } = "";
-        public string Label { get; set; } = "";
+        public class SubTypeInfo
+        {
+            public string Id { get; set; } = string.Empty;
+            public string Label { get; set; } = string.Empty;
+        }
     }
 }

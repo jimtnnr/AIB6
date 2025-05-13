@@ -39,9 +39,16 @@ namespace AIB6
                 LetterTypeDropdown.SelectedIndex = 0;
             OnLetterTypeChanged(LetterTypeDropdown, null);
 
-            //LetterTypeDropdown.ItemsSource = new[] { "Notice", "Demand", "Inquiry", "Confirmation" };
-            ToneDropdown.ItemsSource = new[] { "Friendly", "Professional", "Stern" };
-            //FormalityDropdown.ItemsSource = PromptTemplateRegistry.GetSubTypesForMainType("Complaint").Select(s => s.Label).ToList();
+            //Escalation
+            ToneDropdown.ItemsSource = new[]
+            {
+                "Initial Inquiry",
+                "Reminder",
+                "Demand",
+                "Final Notice",
+                "Intent to Escalate"
+            };
+            ToneDropdown.SelectedIndex = 0;
 
             LengthDropdown.ItemsSource = new[]
             {
@@ -76,80 +83,110 @@ namespace AIB6
 
         private async Task<string> CallLlmAsync(string prompt)
         {
-            var httpClient = new HttpClient();
+            Console.WriteLine($"[DEBUG PROMPT]\n{prompt}");
 
-            var requestBody = new
+            try
             {
-                model = _selectedModel,
-                prompt = prompt,
-                stream = true
-            };
+                var httpClient = new HttpClient();
 
-            var request = new HttpRequestMessage(HttpMethod.Post, _apiUrl)
-            {
-                Content = JsonContent.Create(requestBody)
-            };
-
-            var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-
-            await using var stream = await response.Content.ReadAsStreamAsync();
-            using var reader = new StreamReader(stream);
-
-            var fullResponse = new StringBuilder();
-
-            while (!reader.EndOfStream)
-            {
-                var line = await reader.ReadLineAsync();
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                try
+                var requestBody = new
                 {
-                    using var doc = JsonDocument.Parse(line);
-                    if (doc.RootElement.TryGetProperty("response", out var responseElement))
+                    model = _selectedModel,
+                    prompt = prompt,
+                    stream = true
+                };
+
+                var request = new HttpRequestMessage(HttpMethod.Post, _apiUrl)
+                {
+                    Content = JsonContent.Create(requestBody)
+                };
+
+                var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+
+                await using var stream = await response.Content.ReadAsStreamAsync();
+                using var reader = new StreamReader(stream);
+
+                var fullResponse = new StringBuilder();
+
+                while (!reader.EndOfStream)
+                {
+                    var line = await reader.ReadLineAsync();
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    try
                     {
-                        fullResponse.Append(responseElement.GetString());
+                        using var doc = JsonDocument.Parse(line);
+                        if (doc.RootElement.TryGetProperty("response", out var responseElement))
+                        {
+                            fullResponse.Append(responseElement.GetString());
+                        }
+                    }
+                    catch (Exception parseEx)
+                    {
+                        Console.WriteLine($"[PARSE ERROR]: {parseEx.Message}");
                     }
                 }
-                catch
-                {
-                    // Skip malformed lines silently
-                }
-            }
 
-            return fullResponse.ToString();
+                var result = fullResponse.ToString();
+                if (string.IsNullOrWhiteSpace(result))
+                    Console.WriteLine("[WARNING]: Model returned an empty response.");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LLM ERROR]: {ex.Message}");
+                return "[Error calling language model: " + ex.Message + "]";
+            }
         }
+
 
         private async void OnGenerateClick(object? sender, RoutedEventArgs e)
         {
             var mainType = LetterTypeDropdown.SelectedItem?.ToString() ?? "";
             var subTypeLabel = FormalityDropdown.SelectedItem?.ToString() ?? "";
-            var tone = ToneDropdown.SelectedItem?.ToString() ?? "";
-            var rawLength = LengthDropdown.SelectedItem?.ToString() ?? "";
-            var length = rawLength.Split('(')[0].Trim(); // Gets "Medium" from "Medium (~500 words)"
 
+            var toneLabel = ToneDropdown.SelectedItem?.ToString() ?? "";
+            var rawLength = LengthDropdown.SelectedItem?.ToString() ?? "";
+            var lengthLabel = rawLength.Split('(')[0].Trim(); // "Medium" from "Medium (~500 words)"
+
+            var tone = PromptMappings.MapTone(toneLabel);
+            var length = PromptMappings.MapLength(lengthLabel);
             var userInput = UserInput.Text ?? "";
 
-// Look up template
-            var template = PromptTemplateRegistry.GetSubTypesForMainType(mainType)
+            var templateInfo = PromptTemplateRegistry.GetSubTypesForMainType(mainType)
                 .FirstOrDefault(t => t.Label == subTypeLabel);
 
-            if (template == null)
+            if (templateInfo == null)
             {
                 StatusText.Text = "Template not found.";
                 return;
             }
 
-            var fullTemplate = PromptTemplateRegistry.GetTemplate(mainType, template.Id);
+            var fullTemplate = PromptTemplateRegistry.GetTemplate(mainType, templateInfo.Id);
             if (fullTemplate == null)
             {
                 StatusText.Text = "Prompt template unavailable.";
                 return;
             }
 
-            var prompt = fullTemplate.FillPrompt(userInput, tone, length);
+// Reject empty input or scaffold reuse
+          //  if (string.IsNullOrWhiteSpace(userInput) || userInput.Trim() == UserInput.Watermark.Trim())
+            //{
+            //    StatusText.Text = "Please enter actual details before generating.";
+           //     return;
+        //    }
 
+
+            var prompt = fullTemplate.FillPrompt(userInput, tone, length, mainType, templateInfo.Id);
+            Console.Write(prompt);
+            // Reassert dropdown selections to stabilize state
+            LetterTypeDropdown.SelectedItem = LetterTypeDropdown.SelectedItem;
+            FormalityDropdown.SelectedItem = FormalityDropdown.SelectedItem;
+            ToneDropdown.SelectedItem = ToneDropdown.SelectedItem;
+            LengthDropdown.SelectedItem = LengthDropdown.SelectedItem;
+            GenerateButton.IsEnabled = false;
             SaveButton.IsEnabled = false;
             StatusText.Text = "Generating draft...";
             PreviewBox.Text = "Generating draft...";
@@ -188,14 +225,20 @@ namespace AIB6
             await File.WriteAllTextAsync(fullPath, PreviewBox.Text);
 
             await PostgresHelper.InsertLetterAsync(filename, letterType, DateTime.Now, false, false);
+ 
             StatusText.Text = string.Empty;
-            StatusText.Text = "Letter saved successfully.";
+            StatusText.Text = "Saving Draft....";
             SaveButton.IsEnabled = false;
-            GenerateButton.IsEnabled = true;
-            PreviewBox.Text = "Letter successfully sent to draft review.";
-            await Task.Delay(4000);
+            //PreviewBox.Text = "Saving Draft.";
+            await Task.Delay(250);
+            //StatusText.Text = "Draft Saved Successfully.";
+            PreviewBox.Text = "Draft Saved Successfully. Ready For Next Draft.";
+            //StatusText.Text = string.Empty;
             StatusText.Text = string.Empty;
-            PreviewBox.Text = string.Empty;
+            GenerateButton.IsEnabled = true;
+
+// Reassert user input (optional)
+            UserInput.Text = UserInput.Text;
         }
         private void OnLetterTypeChanged(object? sender, SelectionChangedEventArgs e)
         {
