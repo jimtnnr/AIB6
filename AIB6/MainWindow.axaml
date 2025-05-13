@@ -16,12 +16,12 @@
     </Style>
   </Window.Styles>
 
-  <TabControl>
+  <TabControl x:Name="MainTabs">
     <TabItem Header="Create Drafts">
       <aib6:LetterTab />
     </TabItem>
     <TabItem Header="Review Drafts">
-      <aib6:ArchiveGridView />
+      <aib6:ArchiveGridView x:Name="ArchiveGridView"/>
     </TabItem>
   </TabControl>
 </Window>

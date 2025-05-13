@@ -380,6 +380,12 @@ namespace AIB6
             cmd.Parameters.AddWithValue("id", id);
             await cmd.ExecuteNonQueryAsync();
         }
+        public async Task RefreshGridAsync()
+        {
+            await LoadPage(_currentPage); // or 1, if you want reset
+        }
+
+
     }
 
     public class LetterMetadata
