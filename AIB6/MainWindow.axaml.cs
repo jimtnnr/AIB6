@@ -1,3 +1,4 @@
+using AIB6.Helpers;
 using Avalonia.Controls;
 
 namespace AIB6
@@ -13,6 +14,12 @@ namespace AIB6
             {
                 tabControl.SelectionChanged += OnTabChanged;
             }
+            var defaultTemplate = PromptTemplateRegistry.GetAllTemplates().FirstOrDefault();
+            if (defaultTemplate != null && !string.IsNullOrWhiteSpace(defaultTemplate.Title))
+            {
+                this.Title = defaultTemplate.Title;
+            }
+
         }
         private async void OnTabChanged(object? sender, SelectionChangedEventArgs e)
         {

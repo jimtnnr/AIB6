@@ -179,7 +179,9 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
         return;
     }
 
-    var prompt = fullTemplate.FillPrompt(userInput, tone, length, mainType, templateInfo.Id);
+    var prompt = fullTemplate
+        .FillPrompt(userInput, tone, length, mainType, templateInfo.Id)
+        .Replace("{AppTitle}", fullTemplate.Title);
     Console.Write(prompt);
 
     LetterTypeDropdown.SelectedItem = LetterTypeDropdown.SelectedItem;

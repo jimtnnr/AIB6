@@ -9,7 +9,10 @@ namespace AIB6.Helpers
     public static class PromptTemplateRegistry
     {
         private static List<PromptTemplate> _templates = new();
-
+        public static IEnumerable<PromptTemplate> GetAllTemplates()
+        {
+            return _templates;
+        }
         public static void Load(string path)
         {
             if (path.StartsWith("~"))
@@ -46,6 +49,7 @@ namespace AIB6.Helpers
 
     public class PromptTemplate
     {
+        public string Title { get; set; } = string.Empty;
         public string MainType { get; set; } = string.Empty;
         public string SubType { get; set; } = string.Empty;
         public string Label { get; set; } = string.Empty;
@@ -91,5 +95,7 @@ namespace AIB6.Helpers
             public string Id { get; set; } = string.Empty;
             public string Label { get; set; } = string.Empty;
         }
+
+
     }
 }
