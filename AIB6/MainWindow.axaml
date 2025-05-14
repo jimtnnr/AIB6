@@ -23,6 +23,9 @@
     <TabItem Header="Review Drafts">
       <aib6:ArchiveGridView x:Name="ArchiveGridView"/>
     </TabItem>
+    <TabItem Header="Import Templates">
+      <aib6:ImportTab/>
+    </TabItem>
   </TabControl>
 </Window>
 
