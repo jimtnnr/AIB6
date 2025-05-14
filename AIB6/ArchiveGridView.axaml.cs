@@ -22,7 +22,7 @@ namespace AIB6
         private string _sortDirection = "DESC";
         private string _filter = "";
         private bool _showHidden = false;
-        private const string ConnectionString = "Host=localhost;Username=postgres;Password=Kitten77;Database=postgres";
+        private readonly string _connectionString = Program.AppSettings.ConnectionStrings.Postgres;
 
         private TextBox _searchBox;
         private ToggleSwitch _toggleShowHidden;
@@ -333,7 +333,7 @@ namespace AIB6
         {
             var results = new List<LetterMetadata>();
 
-            using var conn = new NpgsqlConnection(ConnectionString);
+            using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
             using var cmd = new NpgsqlCommand("SELECT * FROM get_draft_archive_page(@page, @size, @sort_column, @sort_direction, @filter, @show_hidden)", conn);
@@ -363,7 +363,7 @@ namespace AIB6
 
         private async Task ToggleFavorite(int id, bool value)
         {
-            using var conn = new NpgsqlConnection(ConnectionString);
+            using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             using var cmd = new NpgsqlCommand("UPDATE draft_archive SET favorite = @val WHERE id = @id", conn);
             cmd.Parameters.AddWithValue("val", value);
@@ -373,7 +373,7 @@ namespace AIB6
 
         private async Task ToggleHidden(int id, bool value)
         {
-            using var conn = new NpgsqlConnection(ConnectionString);
+            using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             using var cmd = new NpgsqlCommand("UPDATE draft_archive SET hidden = @val WHERE id = @id", conn);
             cmd.Parameters.AddWithValue("val", value);
