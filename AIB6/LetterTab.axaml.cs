@@ -100,7 +100,11 @@ namespace AIB6
 
                 var request = new HttpRequestMessage(HttpMethod.Post, _apiUrl)
                 {
-                    Content = JsonContent.Create(requestBody)
+                    Content = new StringContent(
+                        JsonSerializer.Serialize(requestBody),
+                        Encoding.UTF8,
+                        "application/json")
+
                 };
 
                // var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
