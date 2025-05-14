@@ -194,18 +194,23 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
     var stopwatch = Stopwatch.StartNew();
     var cancel = false;
 
-    // UI-safe live timer
+// UI-safe live timer
     _ = Task.Run(async () =>
     {
         while (!cancel)
         {
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                StatusText.Text = $"Generating draft... ({stopwatch.Elapsed.Seconds}s)";
+                var elapsed = stopwatch.Elapsed;
+                var minutes = elapsed.Minutes;
+                var seconds = elapsed.Seconds;
+                StatusText.Text = $"Generating draft... ({minutes:D2}:{seconds:D2})";
+
             });
             await Task.Delay(1000);
         }
     });
+
 
     //var result = await CallLlmAsync(prompt);
     var result = await Task.Run(() => CallLlmAsync(prompt));
@@ -214,7 +219,8 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
     cancel = true;
 
     PreviewBox.Text = result;
-    StatusText.Text = $"Draft ready. ({stopwatch.Elapsed.Seconds}s)";
+    var elapsed = stopwatch.Elapsed;
+    StatusText.Text = $"Draft ready. ({elapsed.Minutes:D2}:{elapsed.Seconds:D2})";
     _letterGenerated = true;
     SaveButton.IsEnabled = true;
     GenerateButton.IsEnabled = false;
