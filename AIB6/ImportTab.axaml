@@ -2,16 +2,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AIB6.ImportTab">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20">
-
-        <TextBlock Text="Import Codex Packs" FontSize="24" FontWeight="Bold" Grid.Row="0" Margin="0,0,0,10" />
-
-        <TextBlock Text="Select a .json Codex file to import new prompt templates." FontSize="14" Grid.Row="1" Margin="0,0,0,20" />
-
-        <Button Name="ImportButton" Content="Import Codex (.json)" Grid.Row="2" Width="200" Height="40" Background="Orange" />
-
-        <TextBlock Name="StatusText" Text="" FontSize="12" Grid.Row="3" Margin="0,20,0,0" />
-
+    <Grid>
+        <StackPanel Name="ImportStack" HorizontalAlignment="Center" VerticalAlignment="Center" />
     </Grid>
 </UserControl>
-
