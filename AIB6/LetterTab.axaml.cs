@@ -237,9 +237,13 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
         private async void OnSaveClick(object? sender, RoutedEventArgs e)
         {
             var letterType = LetterTypeDropdown.SelectedItem?.ToString() ?? "Letter";
-            string safeType = letterType.Replace(" ", "_").ToLower();
+            var parts = letterType.Split('>');
+            var rawTitle = parts[0].Trim().ToLower().Replace(" ", "_");
+            var rawMainType = parts.Length > 1 ? parts[1].Trim().ToLower().Replace(" ", "_") : "unknown";
+
+            string safeType = $"{rawTitle}_{rawMainType}";
             string filename = $"{safeType}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
-            
+
             if (!_letterGenerated)
             {
                 StatusText.Text = "Please generate a letter first.";
