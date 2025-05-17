@@ -31,16 +31,16 @@ namespace AIB6
 
             var instructions = new TextBlock
             {
-                Text = "Select a .json Codex file to import new prompt templates.",
+                Text = "Import new prompt templates.",
                 FontSize = 14,
                 Margin = new Thickness(0, 0, 0, 20)
             };
 
             _importButton = new Button
             {
-                Content = "Import Codex (.json)",
-                Width = 200,
-                Height = 40,
+                Content = "Click - Import Codex (.aibcodex)",
+                Width = 300,
+                Height = 50,
                 Background = new SolidColorBrush(Color.Parse("#F7630C")),
                 Foreground = Brushes.White
             };
@@ -61,7 +61,33 @@ namespace AIB6
 
         private void OnImportClick(object? sender, RoutedEventArgs e)
         {
-            _statusText.Text = "Import logic not implemented yet.";
+            try
+            {
+                var importPath = Program.AppSettings.Paths.ImportFolder;
+
+                if (string.IsNullOrWhiteSpace(importPath) || !Directory.Exists(importPath))
+                {
+                    _statusText.Text = "Import folder not found on USB.";
+                    return;
+                }
+
+                var codexFiles = Directory.GetFiles(importPath, "*.aibcodex");
+
+                if (codexFiles.Length == 0)
+                {
+                    _statusText.Text = "No .aibcodex files found in USB import folder.";
+                }
+                else
+                {
+                    var fileList = string.Join("\n", codexFiles.Select(Path.GetFileName));
+                    _statusText.Text = $"Found {codexFiles.Length} file(s):\n{fileList}";
+                }
+            }
+            catch (Exception ex)
+            {
+                _statusText.Text = $"Error during import scan: {ex.Message}";
+            }
         }
+
     }
 }
