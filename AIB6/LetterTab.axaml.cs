@@ -155,7 +155,10 @@ namespace AIB6
 
 private async void OnGenerateClick(object? sender, RoutedEventArgs e)
 {
-    var mainType = LetterTypeDropdown.SelectedItem?.ToString() ?? "";
+    //var mainType = LetterTypeDropdown.SelectedItem?.ToString() ?? "";
+    var mainType = LetterTypeDropdown.SelectedItem?.ToString()?.Split('>')?.Last().Trim() ?? "";
+
+
     var subTypeLabel = FormalityDropdown.SelectedItem?.ToString() ?? "";
     var toneLabel = ToneDropdown.SelectedItem?.ToString() ?? "";
     var rawLength = LengthDropdown.SelectedItem?.ToString() ?? "";
