@@ -23,7 +23,7 @@ namespace AIB6
             // Bind to AppSettings model
             AppSettings = new AppSettings();
             Configuration.Bind(AppSettings);
-            PromptTemplateRegistry.Load(Program.AppSettings.Paths.PromptTemplatesFile);
+            PromptTemplateRegistry.Load(AppSettings.Paths.PromptTemplatesFolder);
 
             // Continue to Avalonia
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

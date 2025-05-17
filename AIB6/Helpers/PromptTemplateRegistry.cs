@@ -13,19 +13,36 @@ namespace AIB6.Helpers
         {
             return _templates;
         }
-        public static void Load(string path)
+        public static void Load(string folderPath)
         {
-            if (path.StartsWith("~"))
-                path = path.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            if (folderPath.StartsWith("~"))
+                folderPath = folderPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 
-            if (!File.Exists(path))
-                throw new FileNotFoundException($"Prompt template file not found: {path}");
+            if (!Directory.Exists(folderPath))
+                throw new DirectoryNotFoundException($"Template folder not found: {folderPath}");
 
-            string json = File.ReadAllText(path);
-            _templates = JsonSerializer.Deserialize<List<PromptTemplate>>(json, new JsonSerializerOptions
+            _templates.Clear();
+
+            var files = Directory.GetFiles(folderPath, "*.aibcodex", SearchOption.TopDirectoryOnly);
+
+            foreach (var file in files)
             {
-                PropertyNameCaseInsensitive = true
-            }) ?? new List<PromptTemplate>();
+                try
+                {
+                    string json = File.ReadAllText(file);
+                    var templates = JsonSerializer.Deserialize<List<PromptTemplate>>(json, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (templates != null)
+                        _templates.AddRange(templates);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Template Load Error] {file}: {ex.Message}");
+                }
+            }
         }
 
         public static List<string> GetAllMainTypes()
