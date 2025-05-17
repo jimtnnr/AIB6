@@ -32,6 +32,8 @@ namespace AIB6
         public string ArchiveFolder { get; set; } = "";
         public string PromptTemplatesFile { get; set; } = "";   
         public string ImportFolder { get; set; } = "";
+        public string PromptTemplatesFolder { get; set; } = "";   
+
     }
 
     public class LLM
