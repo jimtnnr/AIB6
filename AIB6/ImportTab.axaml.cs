@@ -114,16 +114,16 @@ namespace AIB6
                     try
                     {
                         var json = File.ReadAllText(file);
-                        var singleTemplate = JsonSerializer.Deserialize<PromptTemplate>(json);
+                        using var doc = JsonDocument.Parse(json);
 
-                        if (singleTemplate == null || singleTemplate._sigil != "owl_440Hz_approved")
+                        if (!doc.RootElement.TryGetProperty("_sigil", out var sigil) || sigil.GetString() != "owl_440Hz_approved")
                         {
                             rejectedFiles.Add(fileName);
                             continue;
                         }
 
-                        existingTemplates.Add(singleTemplate);
                         totalImported++;
+
                     }
                     catch (Exception ex)
                     {
