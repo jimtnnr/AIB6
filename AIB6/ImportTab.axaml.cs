@@ -81,7 +81,7 @@ namespace AIB6
                     return;
                 }
 
-                var importFiles = Directory.GetFiles(importPath, "*.json");
+                var importFiles = Directory.GetFiles(importPath, "*.aibcodex");
                 if (importFiles.Length == 0)
                 {
                     _statusText.Text = "No .json files found in USB import folder.";
