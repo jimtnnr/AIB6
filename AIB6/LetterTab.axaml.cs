@@ -36,7 +36,9 @@ namespace AIB6
                 _selectedModel = Program.AppSettings.ModelSettings.Mistral.ModelName;
                 _apiUrl = Program.AppSettings.ModelSettings.Mistral.Endpoint;
             }
-            LetterTypeDropdown.ItemsSource = PromptTemplateRegistry.GetAllMainTypes();
+         
+            LetterTypeDropdown.ItemsSource = PromptTemplateRegistry.GetMainTypeDisplayNames();
+
             if (LetterTypeDropdown.Items.Count > 0)
                 LetterTypeDropdown.SelectedIndex = 0;
             OnLetterTypeChanged(LetterTypeDropdown, null);
@@ -273,7 +275,9 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
         }
         private void OnLetterTypeChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var selectedMainType = LetterTypeDropdown.SelectedItem?.ToString();
+           // var selectedMainType = LetterTypeDropdown.SelectedItem?.ToString();
+            var selectedMainType = LetterTypeDropdown.SelectedItem?.ToString()?.Split('>')?.Last().Trim();
+
             if (string.IsNullOrWhiteSpace(selectedMainType)) return;
 
             var subTypes = PromptTemplateRegistry.GetSubTypesForMainType(selectedMainType);

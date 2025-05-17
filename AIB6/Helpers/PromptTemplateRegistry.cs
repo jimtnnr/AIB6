@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using AIB6;
 
 namespace AIB6.Helpers
 {
@@ -12,6 +13,17 @@ namespace AIB6.Helpers
         public static IEnumerable<PromptTemplate> GetAllTemplates()
         {
             return _templates;
+        }
+        public static List<string> GetMainTypeDisplayNames()
+        {
+            return _templates
+                .GroupBy(t => t.MainType)
+                .Select(g =>
+                {
+                    var first = g.First();
+                    return $"{first.Title} > {first.MainType}";
+                })
+                .ToList();
         }
         public static void Load(string folderPath)
         {
@@ -114,5 +126,7 @@ namespace AIB6.Helpers
         }
 
 
+
     }
+ 
 }
