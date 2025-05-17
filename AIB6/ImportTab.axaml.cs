@@ -5,6 +5,7 @@ using Avalonia.Media;
 using System;
 using System.Text.Json;
 using Avalonia;
+using AIB6.Helpers;
 
 namespace AIB6
 {
@@ -164,21 +165,6 @@ namespace AIB6
         }
     }
 
-    public class PromptTemplate
-    {
-        public string Title { get; set; } = string.Empty;
-        public string MainType { get; set; } = string.Empty;
-        public string SubType { get; set; } = string.Empty;
-        public string Label { get; set; } = string.Empty;
-        public string Structure { get; set; } = string.Empty;
-        public string Intent { get; set; } = string.Empty;
-        public string InputScaffold { get; set; } = string.Empty;
-        public List<LengthOption> LengthOptions { get; set; } = new();
-        public Dictionary<string, string> ToneDirectives { get; set; } = new();
-        public string PromptTemplateText { get; set; } = string.Empty;
-        public string RoleInstruction { get; set; } = string.Empty;
-        public string _sigil { get; set; } = string.Empty;
-    }
 
     public class LengthOption
     {
