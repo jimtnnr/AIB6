@@ -17,14 +17,11 @@ namespace AIB6.Helpers
         public static List<string> GetMainTypeDisplayNames()
         {
             return _templates
-                .GroupBy(t => t.MainType)
-                .Select(g =>
-                {
-                    var first = g.First();
-                    return $"{first.Title} > {first.MainType}";
-                })
+                .Select(t => $"{t.Title} > {t.MainType}")
+                .Distinct()
                 .ToList();
         }
+
         public static void Load(string folderPath)
         {
             if (folderPath.StartsWith("~"))

@@ -302,7 +302,9 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
         }
         private void OnSubTypeChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var mainType = LetterTypeDropdown.SelectedItem?.ToString();
+            var mainType = LetterTypeDropdown.SelectedItem?.ToString()?.Split('>')?.Last().Trim();
+            if (string.IsNullOrWhiteSpace(mainType)) return;
+
             var subTypeLabel = FormalityDropdown.SelectedItem?.ToString();
 
             if (string.IsNullOrWhiteSpace(mainType) || string.IsNullOrWhiteSpace(subTypeLabel))
