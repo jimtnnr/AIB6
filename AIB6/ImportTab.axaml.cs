@@ -89,13 +89,6 @@ namespace AIB6
                     return;
                 }
 
-                List<PromptTemplate> existingTemplates = new();
-                if (File.Exists(templatePath))
-                {
-                    var existingJson = File.ReadAllText(templatePath);
-                    existingTemplates = JsonSerializer.Deserialize<List<PromptTemplate>>(existingJson) ?? new();
-                }
-
                 int totalImported = 0;
                 List<string> skippedFiles = new();
                 List<string> rejectedFiles = new();
@@ -104,17 +97,10 @@ namespace AIB6
                 foreach (var file in importFiles)
                 {
                     var fileName = Path.GetFileName(file);
-                    var destinationFile = Path.Combine(configDir ?? "", fileName);
-
-                    if (File.Exists(destinationFile))
-                    {
-                        skippedFiles.Add(fileName);
-                        continue;
-                    }
+                    var json = File.ReadAllText(file);
 
                     try
                     {
-                        var json = File.ReadAllText(file);
                         using var doc = JsonDocument.Parse(json);
 
                         if (!doc.RootElement.TryGetProperty("_sigil", out var sigil) || sigil.GetString() != "owl_440Hz_approved")
@@ -123,18 +109,21 @@ namespace AIB6
                             continue;
                         }
 
-                        totalImported++;
+                        var destinationFile = Path.Combine(configDir ?? "", fileName);
+                        if (File.Exists(destinationFile))
+                        {
+                            skippedFiles.Add(fileName);
+                            continue;
+                        }
 
+                        File.Copy(file, destinationFile);
+                        totalImported++;
                     }
                     catch (Exception ex)
                     {
                         unreadableFiles.Add($"{fileName}: {ex.Message.Split('\n')[0]}");
                     }
                 }
-
-                var updatedJson = JsonSerializer.Serialize(existingTemplates, new JsonSerializerOptions { WriteIndented = true });
-                if (!Directory.Exists(configDir)) Directory.CreateDirectory(configDir);
-                File.WriteAllText(templatePath, updatedJson);
 
                 var messageLines = new List<string>
                 {
@@ -163,13 +152,6 @@ namespace AIB6
                 _statusText.Text = $"Error during import: {ex.Message}";
             }
         }
-    }
-
-
-    public class LengthOption
-    {
-        public string Label { get; set; } = string.Empty;
-        public int Words { get; set; }
     }
 }
     
