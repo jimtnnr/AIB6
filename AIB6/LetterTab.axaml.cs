@@ -278,12 +278,15 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
         }
         private void OnLetterTypeChanged(object? sender, SelectionChangedEventArgs e)
         {
-           // var selectedMainType = LetterTypeDropdown.SelectedItem?.ToString();
-            var selectedMainType = LetterTypeDropdown.SelectedItem?.ToString()?.Split('>')?.Last().Trim();
+            var selectedText = LetterTypeDropdown.SelectedItem?.ToString();
+            var selectedMainType = selectedText?.Split('>')?.Last().Trim();
+            var selectedTitle = selectedText?.Split('>')?.First().Trim();
+
 
             if (string.IsNullOrWhiteSpace(selectedMainType)) return;
 
-            var subTypes = PromptTemplateRegistry.GetSubTypesForMainType(selectedMainType);
+            var subTypes = PromptTemplateRegistry.GetSubTypesForTitleAndMainType(selectedTitle ?? "", selectedMainType ?? "");
+
             var subTypeLabels = subTypes.Select(s => s.Label).ToList();
 
             FormalityDropdown.ItemsSource = subTypeLabels;

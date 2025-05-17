@@ -21,6 +21,13 @@ namespace AIB6.Helpers
                 .Distinct()
                 .ToList();
         }
+        public static List<PromptTemplate.SubTypeInfo> GetSubTypesForTitleAndMainType(string title, string mainType)
+        {
+            return _templates
+                .Where(t => t.Title == title && t.MainType == mainType)
+                .Select(t => new PromptTemplate.SubTypeInfo { Id = t.SubType, Label = t.Label })
+                .ToList();
+        }
 
         public static void Load(string folderPath)
         {
