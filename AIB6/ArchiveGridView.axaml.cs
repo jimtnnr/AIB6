@@ -95,6 +95,51 @@ namespace AIB6
         {
             await LoadPage(_currentPage + 1);
         }
+        private string FormatDisplayFilename(string rawFilename, DateTime timestamp)
+        {
+            if (rawFilename.EndsWith(".txt"))
+                rawFilename = rawFilename[..^4];
+
+            var parts = rawFilename.Split('_');
+            if (parts.Length < 1)
+                return rawFilename;
+
+            string type = Capitalize(parts[0]);
+            string toName = "";
+
+            // Skip name parsing if it's clearly a date-type filename
+            var months = new[] { "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December" };
+
+            // If type looks like a month, we fallback to just showing "Letter"
+            if (months.Contains(type))
+                type = "Letter";
+
+            // Try building name if parts[1..] aren't the date
+            for (int i = 1; i < parts.Length; i++)
+            {
+                if (months.Contains(Capitalize(parts[i])))
+                    break;
+
+                toName += Capitalize(parts[i]) + " ";
+            }
+
+            toName = toName.Trim();
+            string date = timestamp.ToString("MMM d, yyyy");
+            string time = timestamp.ToString("HH:mm");
+
+            return string.IsNullOrWhiteSpace(toName)
+                ? $"{type} @ {time}"
+                : $"{type} - {toName} @ {time}";
+
+        }
+        private string Capitalize(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            return char.ToUpper(input[0]) + input[1..];
+        }
+
+
 
         public async Task LoadPage(int page)
         {
@@ -107,8 +152,9 @@ namespace AIB6
             _archiveGrid.Children.Clear();
             _archiveGrid.ColumnDefinitions.Clear();
 
-            _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-            _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }); // Filename wider
+            _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Timestamp narrower
+
             _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
             _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
             _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
@@ -169,7 +215,8 @@ namespace AIB6
 
                 AddCell(new TextBlock
                 {
-                    Text = row.filename,
+                    //Text = row.filename,
+                    Text = FormatDisplayFilename(row.filename, row.timestamp),
                     Foreground = Brushes.Black,
                     FontWeight = FontWeight.Bold,
                     VerticalAlignment = VerticalAlignment.Center

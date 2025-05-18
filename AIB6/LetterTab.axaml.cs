@@ -272,19 +272,28 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
 
         private async void OnSaveClick(object? sender, RoutedEventArgs e)
         {
+          
+
             var letterType = LetterTypeDropdown.SelectedItem?.ToString() ?? "Letter";
             var parts = letterType.Split('>');
             var rawTitle = parts[0].Trim().ToLower().Replace(" ", "_");
             var rawMainType = parts.Length > 1 ? parts[1].Trim().ToLower().Replace(" ", "_") : "unknown";
 
-            string safeType = $"{rawTitle}_{rawMainType}";
+            //string safeType = $"{rawTitle}_{rawMainType}";
+            string safeType = string.IsNullOrWhiteSpace(rawMainType) || rawMainType == "unknown"
+                ? Slugify(letterType.ToLower())
+                : $"{rawTitle}_{rawMainType}";
+
             //string filename = $"{safeType}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
             string timestamp = DateTime.Now.ToString("MMMM_dd_yyyy_HH-mm-ss");
             string filename;
+            string baseName = !string.IsNullOrWhiteSpace(safeType) ? safeType : "draft";
+
             if (!string.IsNullOrWhiteSpace(_lastPromptToName))
-                filename = $"{safeType}_{_lastPromptToName}_{timestamp}.txt";
+                filename = $"{baseName}_{_lastPromptToName}_{timestamp}.txt";
             else
-                filename = $"{safeType}_{timestamp}.txt";
+                filename = $"{baseName}_{timestamp}.txt";
+
 
 
             if (!_letterGenerated)
