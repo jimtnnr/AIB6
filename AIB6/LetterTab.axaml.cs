@@ -258,7 +258,10 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
             var rawMainType = parts.Length > 1 ? parts[1].Trim().ToLower().Replace(" ", "_") : "unknown";
 
             string safeType = $"{rawTitle}_{rawMainType}";
-            string filename = $"{safeType}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            //string filename = $"{safeType}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            string timestamp = DateTime.Now.ToString("MMMM_dd_yyyy_HH-mm-ss");
+            string filename = $"{safeType}_{timestamp}.txt";
+
 
             if (!_letterGenerated)
             {
