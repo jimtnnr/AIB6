@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AIB6;
 using AIB6.Helpers;
@@ -20,6 +21,7 @@ namespace AIB6
         private string _selectedModel;
         private string _apiUrl;
         private bool _letterGenerated = false;
+        private string? _lastPromptToName = null;
 
         public LetterTab()
         {
@@ -93,7 +95,25 @@ namespace AIB6
             if (result && !string.IsNullOrWhiteSpace(dialog.AdditionalInfo))
             {
                 UserInput.Text = dialog.AdditionalInfo.Trim();
+
+                // Extract "To:" value from prompt builder text
+                var match = Regex.Match(dialog.AdditionalInfo, @"^To:\s*(.+?)(?:\s*\(|$)", RegexOptions.Multiline);
+                if (match.Success)
+                {
+                    _lastPromptToName = Slugify(match.Groups[1].Value).Trim();
+                    if (_lastPromptToName.Length > 30)
+                        _lastPromptToName = _lastPromptToName.Substring(0, 30);
+                }
+                else
+                {
+                    _lastPromptToName = null;
+                }
             }
+        }
+        private string Slugify(string input)
+        {
+            var slug = Regex.Replace(input.ToLower(), @"[^a-z0-9]+", "_").Trim('_');
+            return slug;
         }
 
         private async Task<string> CallLlmAsync(string prompt)
@@ -260,7 +280,11 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
             string safeType = $"{rawTitle}_{rawMainType}";
             //string filename = $"{safeType}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
             string timestamp = DateTime.Now.ToString("MMMM_dd_yyyy_HH-mm-ss");
-            string filename = $"{safeType}_{timestamp}.txt";
+            string filename;
+            if (!string.IsNullOrWhiteSpace(_lastPromptToName))
+                filename = $"{safeType}_{_lastPromptToName}_{timestamp}.txt";
+            else
+                filename = $"{safeType}_{timestamp}.txt";
 
 
             if (!_letterGenerated)
