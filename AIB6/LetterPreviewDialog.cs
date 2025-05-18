@@ -12,8 +12,8 @@ namespace AIB6
     {
         private readonly TextBlock _textBlock;
         private readonly TextBlock _statusText;
-
-        public LetterPreviewDialog(string title, string letterText)
+        private readonly string _sourceFilePath;
+        public LetterPreviewDialog(string title, string letterText,string filePath)
         {
             Title = title;
             Width = 800;

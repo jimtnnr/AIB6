@@ -248,10 +248,9 @@ namespace AIB6
                             TestBot
                           """;
 
-                    var modal = new LetterPreviewDialog("Preview: " + row.filename, letterText)
-                    {
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner
-                    };
+                    var modal = new LetterPreviewDialog("Preview: " + row.filename, letterText, filePath);
+                    modal.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
                     var ownerWindow = this.VisualRoot as Window;
                     if (ownerWindow is not null)
                         await modal.ShowDialog(ownerWindow);
