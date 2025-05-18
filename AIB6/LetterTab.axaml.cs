@@ -91,7 +91,12 @@ namespace AIB6
 
             try
             {
-                var httpClient = new HttpClient();
+               
+                var httpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromMinutes(10)
+                };
+
 
                 var requestBody = new
                 {

@@ -61,14 +61,15 @@ namespace AIB6
             _statusText = new TextBlock
             {
                 Text = "",
-                Foreground = Brushes.Green,
+                Foreground = new SolidColorBrush(Color.Parse("#0078D4")),
                 FontWeight = FontWeight.Bold,
                 FontSize = 14,
                 Margin = new Thickness(10, 0, 10, 5),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 TextWrapping = TextWrapping.Wrap,
-                MaxWidth = 1000 // or however wide you want the wrap boundary
+                MaxWidth = 1000
             };
+
 
             DockPanel.SetDock(_statusText, Dock.Bottom);
             dockPanel.Children.Add(_statusText);
