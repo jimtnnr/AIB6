@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AIB6.PromptBuilderDialog"
+        Title="AI Letter Prompt"
+        Width="500" Height="550"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <StackPanel Margin="20" Spacing="10">
+
+        <TextBlock Text="Who To (Role, Name):" />
+        <TextBox x:Name="ToField"
+                 Watermark="Vendor, Acme Corp" />
+
+        <TextBlock Text="Who From (Role, Name):" />
+        <TextBox x:Name="FromField"
+                 Watermark="Customer, John Smith" />
+
+        <TextBlock Text="What Happened? Where and When:" />
+        <TextBox x:Name="WhereWhenField"
+                 AcceptsReturn="True"
+                 Height="100"
+                 TextWrapping="Wrap"
+                 Watermark="- Signed contract March 1&#x0a;- Service delayed March 10&#x0a;- No reply since April 5" />
+
+        <TextBlock Text="What Do You Want? When:" />
+        <TextBox x:Name="WantField"
+                 AcceptsReturn="True"
+                 Height="100"
+                 TextWrapping="Wrap"
+                 Watermark="- Full refund by May 15&#x0a;- Cancel service immediately&#x0a;- Written confirmation within 5 days" />
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Spacing="10"
+                    Margin="0,20,0,0">
+            <Button Content="Cancel" Width="100" Click="OnCancel"/>
+            <Button Content="Insert" Width="100" Click="OnInsert"/>
+        </StackPanel>
+
+    </StackPanel>
+</Window>

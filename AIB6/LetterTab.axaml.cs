@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using AIB6;
 using AIB6.Helpers;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AIB6
 {
@@ -83,6 +84,16 @@ namespace AIB6
                     _selectedModel = Program.AppSettings.ModelSettings.Mixtral.ModelName;
                     _apiUrl = Program.AppSettings.ModelSettings.Mixtral.Endpoint;
                 };
+        }
+        private async void OnPromptBuilderClick(object? sender, RoutedEventArgs e)
+        {
+            var dialog = new PromptBuilderDialog();
+            var result = await dialog.ShowDialog<bool>(this.GetVisualRoot() as Window);
+
+            if (result && !string.IsNullOrWhiteSpace(dialog.AdditionalInfo))
+            {
+                UserInput.Text = dialog.AdditionalInfo.Trim();
+            }
         }
 
         private async Task<string> CallLlmAsync(string prompt)
