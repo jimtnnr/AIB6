@@ -29,6 +29,7 @@ namespace AIB6
     public class Paths
     {
         public string ExportFolder { get; set; } = "";
+        public string ExportUSB { get; set; } = "";
         public string ArchiveFolder { get; set; } = "";
         public string PromptTemplatesFile { get; set; } = "";   
         public string ImportFolder { get; set; } = "";
