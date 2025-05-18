@@ -43,15 +43,20 @@
       </StackPanel>
     </StackPanel>
     <TextBlock Text="Additional Context" FontWeight="Bold"/>
-    <TextBox x:Name="UserInput"
-             Watermark="Enter additional context here..."
-             AcceptsReturn="True"
-             Height="100"
-             Background="White"
-             Foreground="#2B2B2B"
-             BorderBrush="#D0D0D0"
-             BorderThickness="1"
-             FontSize="14"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  Height="100">
+      <TextBox x:Name="UserInput"
+               Watermark="Enter additional context here..."
+               AcceptsReturn="True"
+               Background="White"
+               MaxLength="300"
+               Foreground="#2B2B2B"
+               BorderBrush="#D0D0D0"
+               BorderThickness="1"
+               FontSize="14"
+               TextWrapping="Wrap"/>
+    </ScrollViewer>
     <TextBlock Text="Model Preference" FontWeight="Bold"/>
     <StackPanel Orientation="Horizontal" Spacing="10">
       <RadioButton x:Name="FasterRadio" Content="Faster Response" IsChecked="True"/>
