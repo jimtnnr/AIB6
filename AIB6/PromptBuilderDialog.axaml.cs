@@ -16,6 +16,7 @@ namespace AIB6
         {
             string to = ToField.Text?.Trim() ?? "";
             string from = FromField.Text?.Trim() ?? "";
+            string where = WhereField.Text?.Trim() ?? "";
             string whereWhen = WhereWhenField.Text?.Trim() ?? "";
             string want = WantField.Text?.Trim() ?? "";
 
@@ -27,6 +28,9 @@ namespace AIB6
             if (!string.IsNullOrEmpty(to))
                 AdditionalInfo += $"To: {to}\n";
 
+            if (!string.IsNullOrEmpty(where))
+                AdditionalInfo += $"\nWhere: {where}\n";
+
             if (!string.IsNullOrEmpty(whereWhen))
                 AdditionalInfo += $"\nWhat happened:\n{whereWhen}\n";
 
@@ -35,7 +39,6 @@ namespace AIB6
 
             Close(true);
         }
-
 
         private void OnCancel(object? sender, RoutedEventArgs e)
         {
