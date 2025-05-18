@@ -18,7 +18,7 @@ namespace AIB6
             Title = title;
             Width = 800;
             Height = 600;
-
+            _sourceFilePath = filePath;
             var dockPanel = new DockPanel();
 
             var buttonPanel = new StackPanel
@@ -38,7 +38,9 @@ namespace AIB6
                 FontWeight = FontWeight.Bold,
                 CornerRadius = new CornerRadius(4)
             };
-            exportButton.Click += OnExport;
+            exportButton.Click += async (_, _) => await ExportToUSBAsync();
+
+            //exportButton.Click += OnExport;
             buttonPanel.Children.Add(exportButton);
 
             var closeButton = new Button
@@ -59,11 +61,15 @@ namespace AIB6
             _statusText = new TextBlock
             {
                 Text = "",
-                Foreground = Brushes.Gray,
-                FontSize = 12,
+                Foreground = Brushes.Green,
+                FontWeight = FontWeight.Bold,
+                FontSize = 14,
                 Margin = new Thickness(10, 0, 10, 5),
-                HorizontalAlignment = HorizontalAlignment.Left
+                HorizontalAlignment = HorizontalAlignment.Left,
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 1000 // or however wide you want the wrap boundary
             };
+
             DockPanel.SetDock(_statusText, Dock.Bottom);
             dockPanel.Children.Add(_statusText);
 
@@ -91,12 +97,30 @@ namespace AIB6
         {
             Close();
         }
-
-        private async void OnExport(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        
+        private async Task ExportToUSBAsync()
         {
-            _statusText.Text = "Exported";
-            await System.Threading.Tasks.Task.Delay(2000);
-            _statusText.Text = "";
+            try
+            {
+                var exportFolder = Program.AppSettings.Paths.ExportUSB;
+
+                if (!Directory.Exists(exportFolder))
+                {
+                    _statusText.Text = "USB not mounted.";
+                    return;
+                }
+
+                var destinationPath = Path.Combine(exportFolder, Path.GetFileName(_sourceFilePath));
+
+                File.Copy(_sourceFilePath, destinationPath, overwrite: true);
+
+                _statusText.Text = "Exported to USB.";
+            }
+            catch (Exception ex)
+            {
+                _statusText.Text = $"Export failed: {ex.Message}";
+            }
         }
+
     }
 }
