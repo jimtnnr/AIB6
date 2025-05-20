@@ -1,5 +1,6 @@
 using AIB6.Helpers;
 using Avalonia.Controls;
+using System.Linq;
 
 namespace AIB6
 {
@@ -9,33 +10,32 @@ namespace AIB6
         {
             InitializeComponent();
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
+
             var tabControl = this.FindControl<TabControl>("MainTabs");
             if (tabControl != null)
             {
                 tabControl.SelectionChanged += OnTabChanged;
             }
-            var defaultTemplate = PromptTemplateRegistry.GetAllTemplates().FirstOrDefault();
-            if (defaultTemplate != null && !string.IsNullOrWhiteSpace(defaultTemplate.Title))
-            {
-                this.Title = defaultTemplate.Title;
-            }
 
+            var templates = PromptTemplateRegistry.GetAllTemplates()?.ToList();
+            if (templates is { Count: > 0 })
+            {
+                var defaultTemplate = templates.First();
+                if (!string.IsNullOrWhiteSpace(defaultTemplate.Title))
+                    this.Title = defaultTemplate.Title;
+            }
         }
+
         private async void OnTabChanged(object? sender, SelectionChangedEventArgs e)
         {
-            var tabControl = sender as TabControl;
-            if (tabControl?.SelectedItem is TabItem selectedTab)
+            if (sender is TabControl tabControl &&
+                tabControl.SelectedItem is TabItem selectedTab &&
+                selectedTab.Header?.ToString() == "Review Drafts")
             {
-                //Console.WriteLine($"TAB CHANGED: {selectedTab.Header}");
-                if (selectedTab.Header?.ToString() == "Review Drafts")
-                {
-                   // Console.WriteLine("Review Drafts tab activated.");
-                    var archiveGrid = this.FindControl<ArchiveGridView>("ArchiveGridView");
-                    if (archiveGrid != null)
-                        await archiveGrid.RefreshGridAsync(); // Or sort here if needed
-                }
+                var archiveGrid = this.FindControl<ArchiveGridView>("ArchiveGridView");
+                if (archiveGrid != null)
+                    await archiveGrid.RefreshGridAsync();
             }
         }
-
     }
 }
