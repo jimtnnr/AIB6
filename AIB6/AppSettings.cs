@@ -1,6 +1,6 @@
 namespace AIB6
 {
-    public class AppSettings
+    public sealed class AppSettings
     {
         public ConnectionStrings ConnectionStrings { get; set; } = new();
         public ModelSettings ModelSettings { get; set; } = new();
@@ -31,10 +31,9 @@ namespace AIB6
         public string ExportFolder { get; set; } = "";
         public string ExportUSB { get; set; } = "";
         public string ArchiveFolder { get; set; } = "";
-        public string PromptTemplatesFile { get; set; } = "";   
+        public string PromptTemplatesFile { get; set; } = "";
         public string ImportFolder { get; set; } = "";
-        public string PromptTemplatesFolder { get; set; } = "";   
-
+        public string PromptTemplatesFolder { get; set; } = "";
     }
 
     public class LLM
