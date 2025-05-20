@@ -86,7 +86,13 @@ namespace AIB6
                     _selectedModel = Program.AppSettings.ModelSettings.Mixtral.ModelName;
                     _apiUrl = Program.AppSettings.ModelSettings.Mixtral.Endpoint;
                 };
+            
         }
+        private static readonly HttpClient _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(10)
+        };
+
         private async void OnPromptBuilderClick(object? sender, RoutedEventArgs e)
         {
             var dialog = new PromptBuilderDialog();
@@ -123,12 +129,7 @@ namespace AIB6
             try
             {
                
-                var httpClient = new HttpClient
-                {
-                    Timeout = TimeSpan.FromMinutes(10)
-                };
-
-
+                var httpClient = _httpClient;
                 var requestBody = new
                 {
                     model = _selectedModel,
