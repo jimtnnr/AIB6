@@ -61,13 +61,11 @@ namespace AIB6
             _mainPanel.Children.Add(_statusText);
         }
 
-     
         private void OnImportClick(object? sender, RoutedEventArgs e)
         {
             RunImportProcess();
         }
 
-      
         private void RunImportProcess()
         {
             try
@@ -78,14 +76,14 @@ namespace AIB6
 
                 if (string.IsNullOrWhiteSpace(importPath) || !Directory.Exists(importPath))
                 {
-                    _statusText.Text = "Import folder not found on USB.";
+                    _statusText.Text = "No import folder detected. Check that your USB is plugged in and contains the required folder.";
                     return;
                 }
 
                 var importFiles = Directory.GetFiles(importPath, "*.aibcodex");
                 if (importFiles.Length == 0)
                 {
-                    _statusText.Text = "No .aibcodex files found in USB import folder.";
+                    _statusText.Text = "No Codex files found. Make sure your USB includes at least one '.aibcodex' file.";
                     return;
                 }
 
@@ -127,25 +125,25 @@ namespace AIB6
 
                 var messageLines = new List<string>
                 {
-                    $"Imported {totalImported} new template(s)."
+                    $"✅ Imported {totalImported} new Codex file(s)."
                 };
 
                 if (skippedFiles.Count > 0)
                 {
-                    messageLines.Add($"\nSkipped {skippedFiles.Count} file(s) (already present):\n- {string.Join("\n- ", skippedFiles)}");
+                    messageLines.Add($"Skipped {skippedFiles.Count} file(s) — already imported:\n- {string.Join("\n- ", skippedFiles)}");
                 }
 
                 if (rejectedFiles.Count > 0)
                 {
-                    messageLines.Add($"\nRejected {rejectedFiles.Count} file(s) (not genuine AIB file):\n- {string.Join("\n- ", rejectedFiles)}");
+                    messageLines.Add($"Rejected {rejectedFiles.Count} file(s) — invalid or unverified format:\n- {string.Join("\n- ", rejectedFiles)}");
                 }
 
                 if (unreadableFiles.Count > 0)
                 {
-                    messageLines.Add($"\nUnreadable {unreadableFiles.Count} file(s):\n- {string.Join("\n- ", unreadableFiles)}");
+                    messageLines.Add($"Unreadable {unreadableFiles.Count} file(s) — possibly corrupted:\n- {string.Join("\n- ", unreadableFiles)}");
                 }
 
-                _statusText.Text = string.Join("\n", messageLines);
+                _statusText.Text = string.Join("\n\n", messageLines);
             }
             catch (Exception ex)
             {
@@ -154,4 +152,3 @@ namespace AIB6
         }
     }
 }
-    
