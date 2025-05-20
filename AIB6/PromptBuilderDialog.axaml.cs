@@ -1,3 +1,4 @@
+using AIB6.Helpers;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -14,11 +15,12 @@ namespace AIB6
 
         private void OnInsert(object? sender, RoutedEventArgs e)
         {
-            string to = ToField?.Text?.Trim() ?? "";
-            string from = FromField?.Text?.Trim() ?? "";
-            string where = WhereField?.Text?.Trim() ?? "";
-            string whereWhen = WhereWhenField?.Text?.Trim() ?? "";
-            string want = WantField?.Text?.Trim() ?? "";
+            string to = PromptSanitizer.Clean(ToField?.Text ?? "");
+            string from = PromptSanitizer.Clean(FromField?.Text ?? "");
+            string where = PromptSanitizer.Clean(WhereField?.Text ?? "");
+            string whereWhen = PromptSanitizer.Clean(WhereWhenField?.Text ?? "");
+            string want = PromptSanitizer.Clean(WantField?.Text ?? "");
+
 
             AdditionalInfo = "";
 

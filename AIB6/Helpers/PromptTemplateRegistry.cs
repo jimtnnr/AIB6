@@ -114,14 +114,15 @@ namespace AIB6.Helpers
                 : RoleInstruction;
 
             return PromptTemplateText
-                .Replace("{UserInput}", facts)
-                .Replace("{Tone}", toneDirective)
-                .Replace("{Length}", length)
-                .Replace("{Structure}", Structure)
-                .Replace("{Intent}", Intent)
-                .Replace("{MainType}", mainType)
-                .Replace("{SubType}", subType)
-                .Replace("{Role}", role);
+                .Replace("{UserInput}", PromptSanitizer.Clean(facts))
+                .Replace("{Tone}", PromptSanitizer.Clean(toneDirective))
+                .Replace("{Length}", PromptSanitizer.Clean(length))
+                .Replace("{Structure}", PromptSanitizer.Clean(Structure))
+                .Replace("{Intent}", PromptSanitizer.Clean(Intent))
+                .Replace("{MainType}", PromptSanitizer.Clean(mainType))
+                .Replace("{SubType}", PromptSanitizer.Clean(subType))
+                .Replace("{Role}", PromptSanitizer.Clean(role));
+
         }
 
         public class LengthOption
