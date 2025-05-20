@@ -100,21 +100,9 @@ namespace AIB6
 
             if (result && !string.IsNullOrWhiteSpace(dialog.AdditionalInfo))
             {
-                UserInput.Text = dialog.AdditionalInfo.Trim();
-
-                // Extract "To:" value from prompt builder text
-                var match = Regex.Match(dialog.AdditionalInfo, @"^To:\s*(.+?)(?:\s*\(|$)", RegexOptions.Multiline);
-                if (match.Success)
-                {
-                    _lastPromptToName = Slugify(match.Groups[1].Value).Trim();
-                    if (_lastPromptToName.Length > 30)
-                        _lastPromptToName = _lastPromptToName.Substring(0, 30);
-                }
-                else
-                {
-                    _lastPromptToName = null;
-                }
+                UserInput.Text = PromptSanitizer.Clean(dialog.AdditionalInfo);
             }
+
         }
         private string Slugify(string input)
         {
