@@ -81,8 +81,9 @@ namespace AIB6
             _textBlock = new TextBlock
             {
                 Text = letterText,
-                FontSize = 14,
-                FontFamily = new FontFamily("Consolas"),
+                FontSize = 18,
+                FontWeight = FontWeight.Normal,
+                Foreground = Brushes.Black,
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(10)
             };
@@ -90,6 +91,7 @@ namespace AIB6
             var scrollViewer = new ScrollViewer
             {
                 Content = _textBlock,
+                Background = new SolidColorBrush(Color.Parse("#FFFFFF")),
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             };
 
