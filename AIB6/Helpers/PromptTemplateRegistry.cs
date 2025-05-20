@@ -37,7 +37,7 @@ namespace AIB6.Helpers
             if (!Directory.Exists(folderPath))
                 throw new DirectoryNotFoundException($"Template folder not found: {folderPath}");
 
-            _templates.Clear();
+            var newTemplates = new List<PromptTemplate>();
 
             var files = Directory.GetFiles(folderPath, "*.aibcodex", SearchOption.TopDirectoryOnly);
 
@@ -51,14 +51,21 @@ namespace AIB6.Helpers
                         PropertyNameCaseInsensitive = true
                     });
 
-                    if (templates != null)
-                        _templates.AddRange(templates);
+                    if (templates == null || templates.Count == 0)
+                    {
+                        Console.WriteLine($"[Template Skipped] {file}: No valid templates found.");
+                        continue;
+                    }
+
+                    newTemplates.AddRange(templates);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[Template Load Error] {file}: {ex.Message}");
                 }
             }
+
+            _templates = newTemplates;
         }
 
         public static List<string> GetAllMainTypes()
@@ -128,9 +135,5 @@ namespace AIB6.Helpers
             public string Id { get; set; } = string.Empty;
             public string Label { get; set; } = string.Empty;
         }
-
-
-
     }
- 
 }
