@@ -14,11 +14,11 @@ namespace AIB6
 
         private void OnInsert(object? sender, RoutedEventArgs e)
         {
-            string to = ToField.Text?.Trim() ?? "";
-            string from = FromField.Text?.Trim() ?? "";
-            string where = WhereField.Text?.Trim() ?? "";
-            string whereWhen = WhereWhenField.Text?.Trim() ?? "";
-            string want = WantField.Text?.Trim() ?? "";
+            string to = ToField?.Text?.Trim() ?? "";
+            string from = FromField?.Text?.Trim() ?? "";
+            string where = WhereField?.Text?.Trim() ?? "";
+            string whereWhen = WhereWhenField?.Text?.Trim() ?? "";
+            string want = WantField?.Text?.Trim() ?? "";
 
             AdditionalInfo = "";
 
@@ -29,13 +29,14 @@ namespace AIB6
                 AdditionalInfo += $"To: {to}\n";
 
             if (!string.IsNullOrEmpty(where))
-                AdditionalInfo += $"\nWhere: {where}\n";
+                AdditionalInfo += $"Where: {where}\n";
 
             if (!string.IsNullOrEmpty(whereWhen))
-                AdditionalInfo += $"\nWhat happened:\n{whereWhen}\n";
+                AdditionalInfo += $"What happened:\n{whereWhen}\n";
 
             if (!string.IsNullOrEmpty(want))
-                AdditionalInfo += $"\nWhat I want:\n{want}\n";
+                AdditionalInfo += $"What I want:\n{want}\n";
+
 
             Close(true);
         }
