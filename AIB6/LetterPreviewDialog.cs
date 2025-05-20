@@ -5,6 +5,9 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using System;
 using Avalonia.Controls.Primitives;
+using Avalonia.Threading;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace AIB6
 {
@@ -13,12 +16,16 @@ namespace AIB6
         private readonly TextBlock _textBlock;
         private readonly TextBlock _statusText;
         private readonly string _sourceFilePath;
-        public LetterPreviewDialog(string title, string letterText,string filePath)
+
+        public LetterPreviewDialog(string title, string letterText, string filePath)
         {
             Title = title;
             Width = 800;
             Height = 600;
+            WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
             _sourceFilePath = filePath;
+
             var dockPanel = new DockPanel();
 
             var buttonPanel = new StackPanel
@@ -39,8 +46,6 @@ namespace AIB6
                 CornerRadius = new CornerRadius(4)
             };
             exportButton.Click += async (_, _) => await ExportToUSBAsync();
-
-            //exportButton.Click += OnExport;
             buttonPanel.Children.Add(exportButton);
 
             var closeButton = new Button
@@ -70,7 +75,6 @@ namespace AIB6
                 MaxWidth = 1000
             };
 
-
             DockPanel.SetDock(_statusText, Dock.Bottom);
             dockPanel.Children.Add(_statusText);
 
@@ -78,6 +82,7 @@ namespace AIB6
             {
                 Text = letterText,
                 FontSize = 14,
+                FontFamily = new FontFamily("Consolas"),
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(10)
             };
@@ -98,7 +103,7 @@ namespace AIB6
         {
             Close();
         }
-        
+
         private async Task ExportToUSBAsync()
         {
             try
@@ -107,21 +112,26 @@ namespace AIB6
 
                 if (!Directory.Exists(exportFolder))
                 {
-                    _statusText.Text = "USB not mounted.";
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                        _statusText.Text = "No USB drive found. Please insert a USB stick and try again.");
                     return;
                 }
 
                 var destinationPath = Path.Combine(exportFolder, Path.GetFileName(_sourceFilePath));
 
-                File.Copy(_sourceFilePath, destinationPath, overwrite: true);
+                if (!File.Exists(destinationPath))
+                {
+                    File.Copy(_sourceFilePath, destinationPath, overwrite: true);
+                }
 
-                _statusText.Text = "Exported to USB.";
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                    _statusText.Text = "Letter saved to your USB drive.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _statusText.Text = $"Export failed: {ex.Message}";
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                    _statusText.Text = "We couldn’t save your letter. Please check your USB and try again.");
             }
         }
-
     }
 }
