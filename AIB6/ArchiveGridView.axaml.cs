@@ -95,6 +95,7 @@ namespace AIB6
         {
             await LoadPage(_currentPage + 1);
         }
+
         private string FormatDisplayFilename(string rawFilename, DateTime timestamp)
         {
             if (rawFilename.EndsWith(".txt"))
@@ -107,15 +108,12 @@ namespace AIB6
             string type = Capitalize(parts[0]);
             string toName = "";
 
-            // Skip name parsing if it's clearly a date-type filename
             var months = new[] { "January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December" };
 
-            // If type looks like a month, we fallback to just showing "Letter"
             if (months.Contains(type))
                 type = "Letter";
 
-            // Try building name if parts[1..] aren't the date
             for (int i = 1; i < parts.Length; i++)
             {
                 if (months.Contains(Capitalize(parts[i])))
@@ -125,36 +123,35 @@ namespace AIB6
             }
 
             toName = toName.Trim();
-            string date = timestamp.ToString("MMM d, yyyy");
             string time = timestamp.ToString("HH:mm");
 
             return string.IsNullOrWhiteSpace(toName)
                 ? $"{type} @ {time}"
                 : $"{type} - {toName} @ {time}";
-
         }
+
         private string Capitalize(string input)
         {
             if (string.IsNullOrWhiteSpace(input)) return input;
             return char.ToUpper(input[0]) + input[1..];
         }
 
-
-
         public async Task LoadPage(int page)
         {
             var items = await LoadDraftArchivePage(page, PageSize, _sortColumn, _sortDirection, _filter, _showHidden);
 
             if (items.Count == 0 && page > 1)
+            {
+                await LoadPage(1);
                 return;
+            }
 
             _archiveGrid.RowDefinitions.Clear();
             _archiveGrid.Children.Clear();
             _archiveGrid.ColumnDefinitions.Clear();
 
-            _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }); // Filename wider
-            _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Timestamp narrower
-
+            _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) });
+            _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
             _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(50) });
             _archiveGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
@@ -174,7 +171,17 @@ namespace AIB6
                     IsHitTestVisible = true
                 };
 
-                label.PointerPressed += async (_, _) => await Sort(columnKey);
+                label.PointerPressed += async (_, _) =>
+                {
+                    try
+                    {
+                        await Sort(columnKey);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[Sort Error] {columnKey}: {ex.Message}");
+                    }
+                };
 
                 Grid.SetColumn(label, colIndex);
                 Grid.SetRow(label, 0);
@@ -185,10 +192,7 @@ namespace AIB6
             AddHeader("Timestamp", "timestamp", 1, HorizontalAlignment.Left);
             AddHeader("Star", "favorite", 2, HorizontalAlignment.Center);
             AddHeader("Hide", "hidden", 3, HorizontalAlignment.Center);
-            var empty = new TextBlock();
-            Grid.SetColumn(empty, 4);
-            Grid.SetRow(empty, 0);
-            _archiveGrid.Children.Add(empty);
+            _archiveGrid.Children.Add(new TextBlock { });
 
             int rowIndex = 1;
             foreach (var row in items)
@@ -196,7 +200,7 @@ namespace AIB6
                 _archiveGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
                 var background = (rowIndex % 2 == 0)
-                    ? new SolidColorBrush(Color.Parse("#E0F0FF"))
+                    ? new SolidColorBrush(Color.Parse("#D8ECFF"))
                     : new SolidColorBrush(Colors.White);
 
                 void AddCell(Control control, int col)
@@ -215,7 +219,6 @@ namespace AIB6
 
                 AddCell(new TextBlock
                 {
-                    //Text = row.filename,
                     Text = FormatDisplayFilename(row.filename, row.timestamp),
                     Foreground = Brushes.Black,
                     FontWeight = FontWeight.Bold,
@@ -241,15 +244,9 @@ namespace AIB6
                 };
                 star.PointerPressed += async (_, _) =>
                 {
-                    int currentPage = _currentPage;
-                    int pinnedId = row.id;
-
-                    await ToggleFavorite(pinnedId, !row.favorite);
-                    await LoadPage(currentPage);
-
-                    // Optional: scroll or highlight pinnedId row
+                    await ToggleFavorite(row.id, !row.favorite);
+                    await LoadPage(_currentPage);
                 };
-
                 AddCell(star, 2);
 
                 var hiddenCheck = new CheckBox { IsChecked = row.hidden, HorizontalAlignment = HorizontalAlignment.Center };
@@ -257,14 +254,10 @@ namespace AIB6
                 {
                     if (sender is CheckBox cb)
                     {
-                        int pinnedId = row.id;
-                        int currentPage = _currentPage;
-
-                        await ToggleHidden(pinnedId, cb.IsChecked == true);
-                        await LoadPage(currentPage);
+                        await ToggleHidden(row.id, cb.IsChecked == true);
+                        await LoadPage(_currentPage);
                     }
                 };
-
                 AddCell(hiddenCheck, 3);
 
                 var previewLink = new TextBlock
@@ -281,27 +274,35 @@ namespace AIB6
                     var docsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AIBDOCS");
                     var filePath = Path.Combine(docsPath, row.filename);
 
-                    string letterText = File.Exists(filePath)
-                        ? await File.ReadAllTextAsync(filePath)
-                        : $"""
-                            Dear Sir or Madam,
+                    string letterText;
+                    try
+                    {
+                        letterText = File.Exists(filePath)
+                            ? await File.ReadAllTextAsync(filePath)
+                            : $"""
+                                Dear Sir or Madam,
 
-                            This is a sample letter loaded from a fake backend at {DateTime.Now}.
+                                This is a sample letter loaded from a fake backend at {DateTime.Now}.
 
-                            Filename: {row.filename}
-                            Type: {row.letter_type}
+                                Filename: {row.filename}
+                                Type: {row.letter_type}
 
-                            Regards,
-                            TestBot
-                          """;
+                                Regards,
+                                TestBot
+                              """;
+                    }
+                    catch (Exception ex)
+                    {
+                        letterText = $"Unable to load file: {ex.Message}";
+                    }
 
-                    var modal = new LetterPreviewDialog("Preview: " + row.filename, letterText, filePath);
-                    modal.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    var modal = new LetterPreviewDialog("Preview: " + row.filename, letterText, filePath)
+                    {
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
 
-                    var ownerWindow = this.VisualRoot as Window;
-                    if (ownerWindow is not null)
+                    if (this.VisualRoot is Window ownerWindow)
                         await modal.ShowDialog(ownerWindow);
-
                 };
                 AddCell(previewLink, 4);
 
@@ -426,12 +427,11 @@ namespace AIB6
             cmd.Parameters.AddWithValue("id", id);
             await cmd.ExecuteNonQueryAsync();
         }
+
         public async Task RefreshGridAsync()
         {
-            await LoadPage(_currentPage); // or 1, if you want reset
+            await LoadPage(_currentPage);
         }
-
-
     }
 
     public class LetterMetadata
