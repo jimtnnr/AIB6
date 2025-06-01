@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:AIB6"
              x:Class="AIB6.LetterTab"
              Background="#ECF4FA">
 
@@ -76,11 +77,24 @@
                FontSize="14"
                TextWrapping="Wrap"/>
     </ScrollViewer>
-    <TextBlock Text="Model Preference" FontWeight="Bold"/>
-    <StackPanel Orientation="Horizontal" Spacing="10">
-      <RadioButton x:Name="FasterRadio" Content="Faster Response" IsChecked="True"/>
-      <RadioButton x:Name="DetailedRadio" Content="More Detailed"/>
-    </StackPanel>
+    
+    <Grid ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+      <!-- Left side: model preference text + radios -->
+      <StackPanel Grid.Column="0">
+        <TextBlock Text="Model Preference" FontWeight="Bold"/>
+        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,5,0,0">
+          <RadioButton x:Name="FasterRadio" Content="Faster Response" IsChecked="True"/>
+          <RadioButton x:Name="DetailedRadio" Content="More Detailed"/>
+        </StackPanel>
+      </StackPanel>
+
+      <!-- Right side: voice recorder -->
+      <controls:VoiceRecorderControl x:Name="VoiceRecorder"
+                                     Grid.Column="1"
+                                     Margin="20,0,0,0"
+                                     Height="75"
+                                     VerticalAlignment="Top"/>
+    </Grid>
 
     <StackPanel Orientation="Horizontal" Spacing="10">
       <Button x:Name="GenerateButton" Content="Generate Draft" Classes="orange-button" Click="OnGenerateClick"/>

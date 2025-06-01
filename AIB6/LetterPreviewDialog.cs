@@ -81,7 +81,7 @@ namespace AIB6
             _textBlock = new TextBlock
             {
                 Text = letterText,
-                FontSize = 18,
+                FontSize = 16,
                 FontWeight = FontWeight.Normal,
                 Foreground = Brushes.Black,
                 TextWrapping = TextWrapping.Wrap,

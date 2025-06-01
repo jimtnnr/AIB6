@@ -26,6 +26,20 @@ namespace AIB6
         public LetterTab()
         {
             InitializeComponent();
+            VoiceRecorder.TranscriptReady += (_, transcript) =>
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    UserInput.Text = transcript?.Trim(); // Wipe + insert clean
+                });
+            };
+
+            VoiceRecorder.ClearPressed += (_, _) =>
+            {
+                UserInput.Text = ""; // or however you want to respond
+                StatusText.Text = "Cleared via voice recorder";
+            };
+
             SaveButton.IsEnabled = false;
             GenerateButton.IsEnabled = true;
             var defaultModelKey = Program.AppSettings.ModelSettings.DefaultModel;
