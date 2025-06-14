@@ -30,7 +30,18 @@ namespace AIB6
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    UserInput.Text = transcript?.Trim(); // Wipe + insert clean
+                    if (!string.IsNullOrWhiteSpace(transcript))
+                    {
+                        var clean = PromptSanitizer.Clean(transcript);
+                        if (string.IsNullOrWhiteSpace(UserInput.Text))
+                        {
+                            UserInput.Text = clean;
+                        }
+                        else
+                        {
+                            UserInput.Text = UserInput.Text.TrimEnd() + "\n\n" + clean;
+                        }
+                    }
                 });
             };
 
@@ -114,7 +125,15 @@ namespace AIB6
 
             if (result && !string.IsNullOrWhiteSpace(dialog.AdditionalInfo))
             {
-                UserInput.Text = PromptSanitizer.Clean(dialog.AdditionalInfo);
+                var clean = PromptSanitizer.Clean(dialog.AdditionalInfo);
+                if (string.IsNullOrWhiteSpace(UserInput.Text))
+                {
+                    UserInput.Text = clean;
+                }
+                else
+                {
+                    UserInput.Text = UserInput.Text.TrimEnd() + "\n\n" + clean;
+                }
             }
 
         }
