@@ -200,7 +200,7 @@ namespace AIB6
                 _archiveGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
                 var background = (rowIndex % 2 == 0)
-                    ? new SolidColorBrush(Color.Parse("#D8ECFF"))
+                    ? new SolidColorBrush(Color.Parse("#f7f7f7"))
                     : new SolidColorBrush(Colors.White);
 
                 void AddCell(Control control, int col)

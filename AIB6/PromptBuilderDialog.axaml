@@ -5,7 +5,7 @@
         Width="500" Height="600"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
-        Background="#ECF4FA">
+        Background="White">
 
     <StackPanel Margin="20" Spacing="10">
 

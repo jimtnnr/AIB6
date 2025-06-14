@@ -6,7 +6,7 @@
         Width="1000"
         Height="800"
         Title="Letter Writer"
-        Background="#ECF4FA">
+        Background="White">
 
   <Window.Styles>
     <Style Selector="TabItem">
