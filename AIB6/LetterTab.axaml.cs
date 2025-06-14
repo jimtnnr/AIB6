@@ -82,7 +82,7 @@ namespace AIB6
 
 
             LetterTypeDropdown.SelectionChanged += OnLetterTypeChanged;
-            FormalityDropdown.SelectionChanged += OnSubTypeChanged;
+            SubtypeDropdown.SelectionChanged += OnSubTypeChanged;
 
             ToneDropdown.SelectedIndex = 1;
             LengthDropdown.SelectedIndex = 2;
@@ -198,7 +198,7 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
     var mainType = LetterTypeDropdown.SelectedItem?.ToString()?.Split('>')?.Last().Trim() ?? "";
 
 
-    var subTypeLabel = FormalityDropdown.SelectedItem?.ToString() ?? "";
+    var subTypeLabel = SubtypeDropdown.SelectedItem?.ToString() ?? "";
     var toneLabel = ToneDropdown.SelectedItem?.ToString() ?? "";
     var rawLength = LengthDropdown.SelectedItem?.ToString() ?? "";
     var lengthLabel = rawLength.Split('(')[0].Trim();
@@ -229,7 +229,7 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
     Console.Write(prompt);
 
     LetterTypeDropdown.SelectedItem = LetterTypeDropdown.SelectedItem;
-    FormalityDropdown.SelectedItem = FormalityDropdown.SelectedItem;
+    SubtypeDropdown.SelectedItem = SubtypeDropdown.SelectedItem;
     ToneDropdown.SelectedItem = ToneDropdown.SelectedItem;
     LengthDropdown.SelectedItem = LengthDropdown.SelectedItem;
 
@@ -273,7 +273,15 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
 }
 
 
-        private async void OnSaveClick(object? sender, RoutedEventArgs e)
+            private string GetLengthCode(string lengthLabel)
+            {
+                if (lengthLabel.ToLower().Contains("brief") || lengthLabel.ToLower().Contains("short"))
+                    return "short";
+                if (lengthLabel.ToLower().Contains("long"))
+                    return "long";
+                return "med";
+            }
+            private async void OnSaveClick(object? sender, RoutedEventArgs e)
         {
           
 
@@ -282,21 +290,13 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
             var rawTitle = parts[0].Trim().ToLower().Replace(" ", "_");
             var rawMainType = parts.Length > 1 ? parts[1].Trim().ToLower().Replace(" ", "_") : "unknown";
 
-            //string safeType = $"{rawTitle}_{rawMainType}";
-            string safeType = string.IsNullOrWhiteSpace(rawMainType) || rawMainType == "unknown"
-                ? Slugify(letterType.ToLower())
-                : $"{rawTitle}_{rawMainType}";
+            string type = CleanLabel(LetterTypeDropdown.SelectedItem?.ToString()?.Split('>')?.Last() ?? "Letter");
+            string subtype = CleanLabel(SubtypeDropdown.SelectedItem?.ToString() ?? "General");
+            string intent = CleanLabel(ToneDropdown.SelectedItem?.ToString() ?? "Neutral");
+            string length = CleanLengthLabel(LengthDropdown.SelectedItem?.ToString() ?? "Medium");
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
 
-            //string filename = $"{safeType}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
-            string timestamp = DateTime.Now.ToString("MMMM_dd_yyyy_HH-mm-ss");
-            string filename;
-            string baseName = !string.IsNullOrWhiteSpace(safeType) ? safeType : "draft";
-
-            if (!string.IsNullOrWhiteSpace(_lastPromptToName))
-                filename = $"{baseName}_{_lastPromptToName}_{timestamp}.txt";
-            else
-                filename = $"{baseName}_{timestamp}.txt";
-
+            string filename = $"{type}_{subtype}_{intent}_{length}_{timestamp}.txt";
 
 
             if (!_letterGenerated)
@@ -335,6 +335,20 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
 // Reassert user input (optional)
             UserInput.Text = UserInput.Text;
         }
+        private string CleanLabel(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return "Unknown";
+            return string.Concat(raw
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Select(word => char.ToUpper(word[0]) + word.Substring(1)));
+        }
+
+        private string CleanLengthLabel(string raw)
+        {
+            if (raw.ToLower().Contains("brief")) return "Short";
+            if (raw.ToLower().Contains("long")) return "Long";
+            return "Medium";
+        }
         private void OnLetterTypeChanged(object? sender, SelectionChangedEventArgs e)
         {
             var selectedText = LetterTypeDropdown.SelectedItem?.ToString();
@@ -348,10 +362,10 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
 
             var subTypeLabels = subTypes.Select(s => s.Label).ToList();
 
-            FormalityDropdown.ItemsSource = subTypeLabels;
+            SubtypeDropdown.ItemsSource = subTypeLabels;
 
             if (subTypeLabels.Count > 0)
-                FormalityDropdown.SelectedIndex = 0;
+                SubtypeDropdown.SelectedIndex = 0;
 
             // Load first subType's scaffold as watermark
             var selectedSub = subTypes.FirstOrDefault();
@@ -367,7 +381,7 @@ private async void OnGenerateClick(object? sender, RoutedEventArgs e)
             var mainType = LetterTypeDropdown.SelectedItem?.ToString()?.Split('>')?.Last().Trim();
             if (string.IsNullOrWhiteSpace(mainType)) return;
 
-            var subTypeLabel = FormalityDropdown.SelectedItem?.ToString();
+            var subTypeLabel = SubtypeDropdown.SelectedItem?.ToString();
 
             if (string.IsNullOrWhiteSpace(mainType) || string.IsNullOrWhiteSpace(subTypeLabel))
                 return;

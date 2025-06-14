@@ -10,6 +10,8 @@ namespace AIB6.Helpers
     public static class PromptTemplateRegistry
     {
         private static List<PromptTemplate> _templates = new();
+        
+
         public static IEnumerable<PromptTemplate> GetAllTemplates()
         {
             return _templates;
@@ -114,15 +116,15 @@ namespace AIB6.Helpers
                 : RoleInstruction;
 
             return PromptTemplateText
-                .Replace("{UserInput}", PromptSanitizer.Clean(facts))
-                .Replace("{Tone}", PromptSanitizer.Clean(toneDirective))
-                .Replace("{Length}", PromptSanitizer.Clean(length))
-                .Replace("{Structure}", PromptSanitizer.Clean(Structure))
-                .Replace("{Intent}", PromptSanitizer.Clean(Intent))
-                .Replace("{MainType}", PromptSanitizer.Clean(mainType))
-                .Replace("{SubType}", PromptSanitizer.Clean(subType))
-                .Replace("{Role}", PromptSanitizer.Clean(role));
-
+                       .Replace("{UserInput}", PromptSanitizer.Clean(facts))
+                       .Replace("{Tone}", PromptSanitizer.Clean(toneDirective))
+                       .Replace("{Length}", PromptSanitizer.Clean(length))
+                       .Replace("{Structure}", PromptSanitizer.Clean(Structure))
+                       .Replace("{Intent}", PromptSanitizer.Clean(Intent))
+                       .Replace("{MainType}", PromptSanitizer.Clean(mainType))
+                       .Replace("{SubType}", PromptSanitizer.Clean(subType))
+                       .Replace("{Role}", PromptSanitizer.Clean(role))
+                   + "\nUse only the provided facts. Do not create or infer facts not given. If any information is missing, leave a clear placeholder in brackets (e.g., [Insert Date Here]). Do not invent or assume.";
         }
 
         public class LengthOption

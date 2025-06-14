@@ -32,7 +32,7 @@
       </StackPanel>
       <StackPanel>
         <TextBlock Text="Letter Sub-Type" FontWeight="Bold"/>
-        <ComboBox x:Name="FormalityDropdown" Width="255" BorderBrush="#004080"  Classes="clean-combo"/>
+        <ComboBox x:Name="SubtypeDropdown" Width="255" BorderBrush="#004080"  Classes="clean-combo"/>
       </StackPanel>
       <StackPanel>
         <TextBlock Text="Escalation Level" FontWeight="Bold"/>

@@ -7,7 +7,9 @@ using Avalonia.Media;
 using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -102,38 +104,39 @@ namespace AIB6
                 rawFilename = rawFilename[..^4];
 
             var parts = rawFilename.Split('_');
-            if (parts.Length < 1)
+            if (parts.Length < 5)
                 return rawFilename;
 
-            string type = Capitalize(parts[0]);
-            string toName = "";
-
-            var months = new[] { "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December" };
-
-            if (months.Contains(type))
-                type = "Letter";
-
-            for (int i = 1; i < parts.Length; i++)
-            {
-                if (months.Contains(Capitalize(parts[i])))
-                    break;
-
-                toName += Capitalize(parts[i]) + " ";
-            }
-
-            toName = toName.Trim();
+            string type = parts[0];
+            string subtype = SplitCamel(parts[1]);
+            string intent = SplitCamel(parts[2]);
+            string length = parts[3];
             string time = timestamp.ToString("HH:mm");
 
-            return string.IsNullOrWhiteSpace(toName)
-                ? $"{type} @ {time}"
-                : $"{type} - {toName} @ {time}";
+            return $"{type} - {subtype} / {intent} / {length} @ {time}";
         }
-
-        private string Capitalize(string input)
+        private string SplitCamel(string input)
         {
-            if (string.IsNullOrWhiteSpace(input)) return input;
-            return char.ToUpper(input[0]) + input[1..];
+            return System.Text.RegularExpressions.Regex.Replace(
+                input,
+                "(\\B[A-Z])",
+                " $1"
+            );
+        }
+        private string HumanizeLength(string code)
+        {
+            return code switch
+            {
+                "short" => "Short",
+                "med" => "Medium",
+                "long" => "Long",
+                _ => "Medium"
+            };
+        }
+        private string TitleCase(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return "";
+            return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(input.Replace('_', ' ').ToLower());
         }
 
         public async Task LoadPage(int page)
@@ -432,6 +435,24 @@ namespace AIB6
         {
             await LoadPage(_currentPage);
         }
+        private string Capitalize(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
+            return char.ToUpper(input[0]) + input.Substring(1).ToLower();
+        }
+
+        private string CapitalizeWords(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
+            return string.Join(" ", input
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Select(word => Capitalize(word)));
+        }
+
     }
 
     public class LetterMetadata
