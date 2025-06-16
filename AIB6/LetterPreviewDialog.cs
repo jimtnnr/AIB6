@@ -59,22 +59,22 @@ namespace AIB6
             };
             closeButton.Click += OnClose;
             buttonPanel.Children.Add(closeButton);
+    
 
-            DockPanel.SetDock(buttonPanel, Dock.Bottom);
-            dockPanel.Children.Add(buttonPanel);
 
             _statusText = new TextBlock
             {
                 Text = "",
-                Foreground = new SolidColorBrush(Color.Parse("#0078D4")),
+                Foreground = Brushes.Green,
                 FontWeight = FontWeight.Bold,
-                FontSize = 14,
-                Margin = new Thickness(10, 0, 10, 5),
+                FontSize = 20,
+                Margin = new Thickness(10, 20, 10, 5),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 TextWrapping = TextWrapping.Wrap,
                 MaxWidth = 1000
             };
-
+            DockPanel.SetDock(buttonPanel, Dock.Bottom);
+            dockPanel.Children.Add(buttonPanel);
             DockPanel.SetDock(_statusText, Dock.Bottom);
             dockPanel.Children.Add(_statusText);
 
@@ -105,8 +105,12 @@ namespace AIB6
         {
             Close();
         }
-
         private async Task ExportToUSBAsync()
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+                _statusText.Text = "Export Complete.");
+        }
+        private async Task ExportToUSBAsyncOld()
         {
             try
             {

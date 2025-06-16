@@ -6,6 +6,7 @@
         Width="1000"
         Height="800"
         Title="Letter Writer"
+        WindowStartupLocation="CenterOwner"
         Background="White">
 
   <Window.Styles>
