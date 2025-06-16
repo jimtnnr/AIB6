@@ -107,8 +107,22 @@ namespace AIB6
         }
         private async Task ExportToUSBAsync()
         {
+            // Set to "Exporting..." in black
             await Dispatcher.UIThread.InvokeAsync(() =>
-                _statusText.Text = "Export Complete.");
+            {
+                _statusText.Text = "Exporting...";
+                _statusText.Foreground = Brushes.Black;
+            });
+
+            // Simulate export time
+            await Task.Delay(1750);
+
+            // Update to "Export Complete" in green
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _statusText.Text = "Export Complete";
+                _statusText.Foreground = Brushes.Green;
+            });
         }
         private async Task ExportToUSBAsyncOld()
         {
