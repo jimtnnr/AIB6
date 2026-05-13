@@ -1,2 +1,64 @@
-{
-}
+[
+  {
+    "Title": "Legal Letters",
+    "MainType": "Appeal",
+    "SubType": "insurance_claim",
+    "Label": "Insurance Claim Appeal",
+    "Structure": "Formal business letter with introduction, facts, argument, and requested resolution.",
+    "Intent": "Persuade the recipient to reconsider a denied insurance claim.",
+    "InputScaffold": "[Who] submitted the claim\n[What] was denied\n[When] the denial occurred\n[Why] the denial should be reconsidered",
+    "LengthOptions": [
+      {
+        "Label": "Brief",
+        "Words": 150
+      },
+      {
+        "Label": "Medium",
+        "Words": 500
+      },
+      {
+        "Label": "Full",
+        "Words": 1000
+      }
+    ],
+    "ToneDirectives": {
+      "Professional": "Use a professional and respectful legal tone.",
+      "Firm": "Use a firm and assertive legal tone.",
+      "Neutral": "Use a calm and objective legal tone."
+    },
+    "PromptTemplateText": "You are acting as a legal professional.\n\n{Role}\n\nWrite a {Tone} {Length} letter.\n\nLetter Type: {MainType}\nSub Type: {SubType}\n\nIntent:\n{Intent}\n\nStructure:\n{Structure}\n\nFacts Provided:\n{UserInput}\n\nGenerate a polished and professional legal letter.",
+    "RoleInstruction": "You are an experienced legal assistant preparing a formal appeal letter.",
+    "_sigil": "owl_440Hz_approved"
+  },
+  {
+    "Title": "Legal Letters",
+    "MainType": "Demand",
+    "SubType": "payment_demand",
+    "Label": "Payment Demand",
+    "Structure": "Formal demand letter outlining debt, timeline, and requested action.",
+    "Intent": "Demand payment for an outstanding obligation.",
+    "InputScaffold": "[Who] owes the money\n[Amount owed]\n[When] payment was due\n[Any prior communication]",
+    "LengthOptions": [
+      {
+        "Label": "Brief",
+        "Words": 150
+      },
+      {
+        "Label": "Medium",
+        "Words": 500
+      },
+      {
+        "Label": "Full",
+        "Words": 1000
+      }
+    ],
+    "ToneDirectives": {
+      "Professional": "Use a professional and businesslike tone.",
+      "Firm": "Use a direct and assertive legal tone.",
+      "Neutral": "Use a factual and neutral tone."
+    },
+    "PromptTemplateText": "You are acting as a legal professional.\n\n{Role}\n\nWrite a {Tone} {Length} demand letter.\n\nLetter Type: {MainType}\nSub Type: {SubType}\n\nIntent:\n{Intent}\n\nStructure:\n{Structure}\n\nFacts Provided:\n{UserInput}\n\nGenerate a polished and professional legal demand letter.",
+    "RoleInstruction": "You are an experienced legal assistant preparing a formal payment demand letter.",
+    "_sigil": "owl_440Hz_approved"
+  }
+]
