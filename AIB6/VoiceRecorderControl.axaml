@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AIB6.VoiceRecorderControl"
              Width="600"
-             Height="540"
+ 
              >
 
     <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="0">

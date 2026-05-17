@@ -97,20 +97,6 @@ namespace AIB6
 
             ToneDropdown.SelectedIndex = 1;
             LengthDropdown.SelectedIndex = 2;
-
-            if (FasterRadio != null)
-                FasterRadio.Checked += (_, _) =>
-                {
-                    _selectedModel = Program.AppSettings.ModelSettings.Mistral.ModelName;
-                    _apiUrl = Program.AppSettings.ModelSettings.Mistral.Endpoint;
-                };
-
-            if (DetailedRadio != null)
-                DetailedRadio.Checked += (_, _) =>
-                {
-                    _selectedModel = Program.AppSettings.ModelSettings.Mixtral.ModelName;
-                    _apiUrl = Program.AppSettings.ModelSettings.Mixtral.Endpoint;
-                };
             
         }
         private static readonly HttpClient _httpClient = new HttpClient
