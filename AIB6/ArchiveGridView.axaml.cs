@@ -415,7 +415,7 @@ namespace AIB6
         {
             using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
-            using var cmd = new NpgsqlCommand("UPDATE draft_archive SET favorite = @val WHERE id = @id", conn);
+            using var cmd = new NpgsqlCommand("UPDATE letters SET favorite = @val WHERE id = @id", conn);
             cmd.Parameters.AddWithValue("val", value);
             cmd.Parameters.AddWithValue("id", id);
             await cmd.ExecuteNonQueryAsync();
@@ -425,7 +425,7 @@ namespace AIB6
         {
             using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
-            using var cmd = new NpgsqlCommand("UPDATE draft_archive SET hidden = @val WHERE id = @id", conn);
+            using var cmd = new NpgsqlCommand("UPDATE letters SET hidden = @val WHERE id = @id", conn);
             cmd.Parameters.AddWithValue("val", value);
             cmd.Parameters.AddWithValue("id", id);
             await cmd.ExecuteNonQueryAsync();
