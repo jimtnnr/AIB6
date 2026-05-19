@@ -78,12 +78,11 @@
                TextWrapping="Wrap"/>
     </ScrollViewer>
     
-    <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
+    <Grid Margin="0,6,0,0">
 
-      <!-- Left side -->
-      <StackPanel Grid.Column="0"
-                  Orientation="Horizontal"
+      <StackPanel Orientation="Horizontal"
                   Spacing="10"
+                  HorizontalAlignment="Center"
                   VerticalAlignment="Top">
 
         <Button x:Name="GenerateButton"
@@ -97,13 +96,6 @@
                 Click="OnSaveClick"/>
       </StackPanel>
 
-      <!-- Right side -->
-      <controls:VoiceRecorderControl x:Name="VoiceRecorder"
-                                     Grid.Column="1"
-                                     Margin="20,0,0,0"
-                                     Height="75"
-                                     HorizontalAlignment="Left"
-                                     VerticalAlignment="Top"/>
     </Grid>
 
     <TextBlock x:Name="StatusText"

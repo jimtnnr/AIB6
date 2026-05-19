@@ -26,30 +26,30 @@ namespace AIB6
         public LetterTab()
         {
             InitializeComponent();
-            VoiceRecorder.TranscriptReady += (_, transcript) =>
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    if (!string.IsNullOrWhiteSpace(transcript))
-                    {
-                        var clean = PromptSanitizer.Clean(transcript);
-                        if (string.IsNullOrWhiteSpace(UserInput.Text))
-                        {
-                            UserInput.Text = clean;
-                        }
-                        else
-                        {
-                            UserInput.Text = UserInput.Text.TrimEnd() + "\n\n" + clean;
-                        }
-                    }
-                });
-            };
+        //    VoiceRecorder.TranscriptReady += (_, transcript) =>
+          //  {
+            //    Dispatcher.UIThread.Post(() =>
+              //  {
+                //    if (!string.IsNullOrWhiteSpace(transcript))
+                  //  {
+                    //    var clean = PromptSanitizer.Clean(transcript);
+                      //  if (string.IsNullOrWhiteSpace(UserInput.Text))
+                        //{
+                          //  UserInput.Text = clean;
+                       // }
+                       // else
+                       // {
+                         //   UserInput.Text = UserInput.Text.TrimEnd() + "\n\n" + clean;
+                       // }
+                   // }
+               // });
+           // };
 
-            VoiceRecorder.ClearPressed += (_, _) =>
-            {
-                UserInput.Text = ""; // or however you want to respond
-                StatusText.Text = "Cleared via voice recorder";
-            };
+    //        VoiceRecorder.ClearPressed += (_, _) =>
+      //      {
+        //        UserInput.Text = ""; // or however you want to respond
+          //      StatusText.Text = "Cleared via voice recorder";
+            //};
 
             SaveButton.IsEnabled = false;
             GenerateButton.IsEnabled = true;

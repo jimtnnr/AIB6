@@ -159,12 +159,14 @@ namespace AIB6
                 {
                     StartInfo = new ProcessStartInfo
                     {
-                        FileName = "ffmpeg",
-                        Arguments = $"-y -f alsa -i default {wavPath}",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
+                        FileName = "docker",
+
+                        Arguments =
+                            $"run --rm " +
+                            $"--device /dev/snd " +
+                            $"-v /tmp/airlock_voice:/audio " +
+                            $"jrottenberg/ffmpeg:6.0-ubuntu " +
+                            $"-y -f alsa -i default /audio/temp.wav",
                     }
                 };
 
@@ -227,8 +229,15 @@ namespace AIB6
                     {
                         StartInfo = new ProcessStartInfo
                         {
-                            FileName = "/home/jimtnnr/whisper.cpp/build/bin/whisper-cli",
-                            Arguments = $"-m /home/jimtnnr/whisper.cpp/models/ggml-base.en.bin -f {wavPath} -otxt -of {outputDir}/output",
+                            FileName = "docker",
+
+                            Arguments =
+                                $"exec airlock-whisper " +
+                                $"/app/build/bin/whisper-cli " +
+                                $"-m /models/ggml-base.en.bin " +
+                                $"-f /audio/temp.wav " +
+                                $"-otxt -of /audio/output",
+
                             RedirectStandardOutput = true,
                             RedirectStandardError = true,
                             UseShellExecute = false,
