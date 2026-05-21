@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict R46cEIFlVuyPwmD63UMmXSSHa9WqQ2QAkbqwbZn9eL42sTVw4P5Bj1zhVuhTPuW
+\restrict 5Hcu3Ygxv7zZlXVOUAYz5bcMJRVB0yk0atxnmsTdoUtajPHPyGbRs4XFlAwUv62
 
 -- Dumped from database version 16.13 (Ubuntu 16.13-0ubuntu0.24.04.1)
 -- Dumped by pg_dump version 16.13 (Ubuntu 16.13-0ubuntu0.24.04.1)
@@ -33,30 +33,44 @@ ALTER SCHEMA public OWNER TO airlock;
 
 CREATE FUNCTION public.get_draft_archive_page(page integer, size integer, sort_column text, sort_direction text, filter text, show_hidden boolean) RETURNS TABLE(id integer, filename text, letter_type text, "timestamp" timestamp without time zone, favorite boolean, hidden boolean)
     LANGUAGE plpgsql
-    AS $$
+    AS $_$
+DECLARE
+sql_query text;
 BEGIN
-    RETURN QUERY
-    SELECT
-        letters.id,
-        letters.filename,
-        letters.letter_type,
-        letters."timestamp",
-        letters.favorite,
-        letters.hidden
-    FROM letters
-    WHERE
-        (show_hidden = TRUE OR letters.hidden = FALSE)
-        AND (
-            filter IS NULL
-            OR filter = ''
-            OR letters.filename ILIKE '%' || filter || '%'
-            OR letters.letter_type ILIKE '%' || filter || '%'
-        )
-    ORDER BY letters."timestamp" DESC
-    LIMIT size
-    OFFSET ((page - 1) * size);
+    sql_query := format(
+        '
+        SELECT
+            letters.id,
+            letters.filename,
+            letters.letter_type,
+            letters."timestamp",
+            letters.favorite,
+            letters.hidden
+        FROM letters
+        WHERE
+            ($1 = TRUE OR letters.hidden = FALSE)
+            AND (
+                $2 IS NULL
+                OR $2 = ''''
+                OR letters.filename ILIKE ''%%'' || $2 || ''%%''
+                OR letters.letter_type ILIKE ''%%'' || $2 || ''%%''
+            )
+        ORDER BY %I %s
+        LIMIT $3
+        OFFSET $4
+        ',
+        sort_column,
+        sort_direction
+    );
+
+RETURN QUERY EXECUTE sql_query
+    USING
+        show_hidden,
+        filter,
+        size,
+        ((page - 1) * size);
 END;
-$$;
+$_$;
 
 
 ALTER FUNCTION public.get_draft_archive_page(page integer, size integer, sort_column text, sort_direction text, filter text, show_hidden boolean) OWNER TO airlock;
@@ -69,16 +83,16 @@ CREATE FUNCTION public.get_letters() RETURNS TABLE(id integer, filename text, le
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    RETURN QUERY
-    SELECT
-        letters.id,
-        letters.filename,
-        letters.letter_type,
-        letters."timestamp",
-        letters.favorite,
-        letters.hidden
-    FROM letters
-    ORDER BY letters."timestamp" DESC;
+RETURN QUERY
+SELECT
+    letters.id,
+    letters.filename,
+    letters.letter_type,
+    letters."timestamp",
+    letters.favorite,
+    letters.hidden
+FROM letters
+ORDER BY letters."timestamp" DESC;
 END;
 $$;
 
@@ -93,20 +107,20 @@ CREATE PROCEDURE public.insert_letter(IN p_filename text, IN p_letter_type text,
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    INSERT INTO letters (
-        filename,
-        letter_type,
-        timestamp,
-        favorite,
-        hidden
-    )
-    VALUES (
-        p_filename,
-        p_letter_type,
-        p_timestamp,
-        p_favorite,
-        p_hidden
-    );
+INSERT INTO letters (
+    filename,
+    letter_type,
+    timestamp,
+    favorite,
+    hidden
+)
+VALUES (
+           p_filename,
+           p_letter_type,
+           p_timestamp,
+           p_favorite,
+           p_hidden
+       );
 END;
 $$;
 
@@ -122,12 +136,12 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.draft_archive (
-    id integer NOT NULL,
-    filename text NOT NULL,
-    letter_type text NOT NULL,
-    "timestamp" timestamp without time zone NOT NULL,
-    favorite boolean DEFAULT false NOT NULL,
-    hidden boolean DEFAULT false NOT NULL
+                                      id integer NOT NULL,
+                                      filename text NOT NULL,
+                                      letter_type text NOT NULL,
+                                      "timestamp" timestamp without time zone NOT NULL,
+                                      favorite boolean DEFAULT false NOT NULL,
+                                      hidden boolean DEFAULT false NOT NULL
 );
 
 
@@ -160,12 +174,12 @@ ALTER SEQUENCE public.draft_archive_id_seq OWNED BY public.draft_archive.id;
 --
 
 CREATE TABLE public.letters (
-    id integer NOT NULL,
-    filename text NOT NULL,
-    letter_type text NOT NULL,
-    "timestamp" timestamp without time zone NOT NULL,
-    favorite boolean DEFAULT false NOT NULL,
-    hidden boolean DEFAULT false NOT NULL
+                                id integer NOT NULL,
+                                filename text NOT NULL,
+                                letter_type text NOT NULL,
+                                "timestamp" timestamp without time zone NOT NULL,
+                                favorite boolean DEFAULT false NOT NULL,
+                                hidden boolean DEFAULT false NOT NULL
 );
 
 
@@ -267,5 +281,4 @@ ALTER TABLE ONLY public.letters
 -- PostgreSQL database dump complete
 --
 
-\unrestrict R46cEIFlVuyPwmD63UMmXSSHa9WqQ2QAkbqwbZn9eL42sTVw4P5Bj1zhVuhTPuW
-
+\unrestrict 5Hcu3Ygxv7zZlXVOUAYz5bcMJRVB0yk0atxnmsTdoUtajPHPyGbRs4XFlAwUv62
