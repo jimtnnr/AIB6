@@ -1,0 +1,219 @@
+# AirLock – Airpack Platform Architecture
+## How .airpac Files Turn One Runtime Into Any Vertical
+
+---
+
+## The Core Idea
+
+The Airlock UI is fixed. The dropdowns are not.
+
+Every dropdown the user sees is loaded dynamically from `.airpac` metadata files at runtime. Swap the pack, swap the entire vertical experience — without touching a single line of application code.
+
+```
+.airpac file
+    ↓
+PromptTemplateRegistry.Load()
+    ↓
+Dropdowns populate
+    ↓
+User fills context
+    ↓
+FillPrompt() assembles the payload
+    ↓
+Mistral generates the letter
+```
+
+The UI is a shell. The `.airpac` is the brain.
+
+---
+
+## What the UI Actually Shows
+
+Looking at the Create Drafts screen, every visible control is driven by `.airpac` metadata:
+
+| UI Control | Loaded From |
+|---|---|
+| **Letter Type** dropdown | `Title > MainType` (one entry per template) |
+| **Letter Sub-Type** dropdown | `Label` field, filtered by selected MainType |
+| **Escalation Level** dropdown | Currently hardcoded — future: from `ToneDirectives` keys |
+| **Letter Length** dropdown | Currently hardcoded — future: from `LengthOptions` |
+| **Context Builder watermark** | `InputScaffold` field |
+| **Hidden prompt logic** | `PromptTemplateText`, `RoleInstruction`, `Structure`, `Intent`, `ToneDirectives` |
+
+Change the `.airpac` — the entire UI repopulates with a different vertical.
+
+---
+
+## Current .airpac Schema
+
+```json
+{
+  "Title": "Legal Letters",
+  "MainType": "Appeal",
+  "SubType": "insurance_claim",
+  "Label": "Insurance Claim Appeal",
+  "Structure": "Formal business letter with introduction, facts, argument, and requested resolution.",
+  "Intent": "Persuade the recipient to reconsider a denied insurance claim.",
+  "InputScaffold": "[Who] submitted the claim\n[What] was denied\n[When] the denial occurred\n[Why] the denial should be reconsidered",
+  "LengthOptions": [
+    { "Label": "Brief", "Words": 150 },
+    { "Label": "Medium", "Words": 500 },
+    { "Label": "Full", "Words": 1000 }
+  ],
+  "ToneDirectives": {
+    "Professional": "Use a professional and respectful legal tone.",
+    "Firm": "Use a firm and assertive legal tone.",
+    "Neutral": "Use a calm and objective legal tone."
+  },
+  "PromptTemplateText": "You are acting as a legal professional.\n\n{Role}\n\nWrite a {Tone} {Length} letter...",
+  "RoleInstruction": "You are an experienced legal assistant preparing a formal appeal letter.",
+  "_sigil": "owl_440Hz_approved"
+}
+```
+
+### Field Roles
+
+| Field | Visible to User | Purpose |
+|---|---|---|
+| `Title` | Yes — Letter Type dropdown | Groups templates under a vertical name |
+| `MainType` | Yes — Letter Type dropdown | Second half of the `Title > MainType` display |
+| `SubType` | No — internal ID | Used to look up the correct template |
+| `Label` | Yes — Sub-Type dropdown | Human-readable name for the sub-type |
+| `InputScaffold` | Yes — as watermark text | Guides user on what facts to enter |
+| `LengthOptions` | Future dropdown | Word count targets per length choice |
+| `ToneDirectives` | Future dropdown keys | Maps tone labels to prompt instructions |
+| `Structure` | No — injected into prompt | Tells the model how to structure the output |
+| `Intent` | No — injected into prompt | Tells the model the purpose of the letter |
+| `PromptTemplateText` | No — assembled by FillPrompt() | The full prompt template with placeholders |
+| `RoleInstruction` | No — injected into prompt | Sets the model's professional persona |
+| `_sigil` | No — validation only | Pack authenticity check on import |
+
+---
+
+## How FillPrompt() Assembles the Payload
+
+When the user hits Generate Draft, `FillPrompt()` replaces all placeholders:
+
+```
+{Role}      ← RoleInstruction
+{Tone}      ← ToneDirectives[selected tone]
+{Length}    ← LengthMap[selected length]
+{Structure} ← Structure field
+{Intent}    ← Intent field
+{MainType}  ← MainType field
+{SubType}   ← SubType field
+{UserInput} ← what the user typed in the context box
+```
+
+The user never sees any of this. They see four dropdowns and a text box. The pack does the rest.
+
+---
+
+## One Runtime, Any Vertical
+
+Because the UI is fully metadata-driven, installing a different `.airpac` file completely transforms what Airlock does:
+
+**Legal Pack** → demand letters, appeals, eviction notices
+**HR Pack** → PIPs, termination letters, offer letters, policy notices
+**Medical Pack** → prior auth appeals, patient advocacy letters, insurance disputes
+**Property Management Pack** → lease violations, rent demands, maintenance notices
+**Insurance Pack** → claim denials, coverage disputes, subrogation letters
+**Contractor Pack** → lien notices, payment disputes, change order documentation
+**Nonprofit Pack** → donor acknowledgment, grant correspondence, board communications
+
+Same app. Same runtime. Same UI shell. Different `.airpac`.
+
+The operator loads the pack for their vertical. The dropdowns repopulate. The prompting logic, tone system, role instructions, and scaffolding all come from the pack. The user just fills in the facts.
+
+---
+
+## What Can Live Inside an Airpack
+
+Airpacks are not limited to what is currently implemented. The schema can grow to support:
+
+**Already implemented:**
+- Dropdown population (Title, MainType, SubType/Label)
+- Context scaffolding watermark (InputScaffold)
+- Hidden prompt logic (PromptTemplateText, RoleInstruction, Structure, Intent)
+- Tone directives (ToneDirectives)
+- Length options (LengthOptions)
+
+**Natural extensions:**
+- Letter header/footer templates (letterhead formatting)
+- Jurisdiction-specific language (state/country variants)
+- Forbidden phrases list (compliance guardrails)
+- Required sections enforcement (must include: date, reference number, etc.)
+- Output format hints (bullet points vs prose vs numbered list)
+- Domain-specific terminology glossaries
+- Escalation sequencing logic (Initial → Reminder → Demand → Final Notice)
+- Multiple prompt templates per sub-type (short/long variants)
+
+All of this stays invisible to the user. The pack handles it beneath the surface.
+
+---
+
+## How Packs Load
+
+`PromptTemplateRegistry.Load()` scans the config folder for all `.airpac` files at startup:
+
+```csharp
+var files = Directory.GetFiles(folderPath, "*.airpac", SearchOption.TopDirectoryOnly);
+```
+
+Multiple packs can coexist. Each pack adds its templates to the registry. The Letter Type dropdown shows all available `Title > MainType` combinations across all loaded packs. A fully loaded Airlock could simultaneously offer Legal, HR, Medical, and Property Management workflows from separate `.airpac` files — all in one dropdown.
+
+---
+
+## Import System
+
+New packs are imported via the Import Templates tab (USB or local folder). The `_sigil` field is validated on import — only packs with the correct sigil are accepted. This is the trust boundary for the ecosystem.
+
+```
+USB drive → /mnt/AIBUSB/import/
+    ↓
+ImportTab scans for *.airpac
+    ↓
+Validates _sigil
+    ↓
+Copies to ~/Documents/AIBDOCS/config/
+    ↓
+Available on next app launch
+```
+
+---
+
+## The Platform Implication
+
+The friction to create a new vertical is:
+
+1. Write a JSON file following the `.airpac` schema
+2. Fill in the fields for your domain
+3. Copy to the config folder
+4. Relaunch Airlock
+
+No code changes. No recompile. No deployment.
+
+This means domain experts — lawyers, HR consultants, property managers, medical billers — can build their own workflow packs without touching the application. The schema is the SDK. If you can edit JSON, you can build an Airpack.
+
+That is the platform model. Airlock is the runtime. Airpacks are the product layer. The two can evolve independently.
+
+---
+
+## Naming
+
+The file extension is `.airpac` (not `.aibcodex` — that was the internal development name).
+
+Pack files should be named descriptively:
+
+```
+legal_letters.airpac
+hr_workflows.airpac
+property_management.airpac
+medical_appeals.airpac
+```
+
+Multiple packs can be installed simultaneously. The runtime merges them all into the dropdown at load time.
+
+---
+
+*Last updated: June 2026*
