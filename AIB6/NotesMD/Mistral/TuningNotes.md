@@ -1,60 +1,88 @@
-# Airlock — Ollama/Mistral Performance Tuning
-**Machine: Airlock Mini PC | AMD Ryzen 7 5700U | 38GB RAM | CPU-only by design**
+# AirLock AI – Dockerized Mistral Runtime: Install Guide
+
+## Objective
+
+Create a clean, deterministic local runtime for AirLock AI using Docker and a single local Mistral inference endpoint.
+
+The goal is to preserve the existing Avalonia application architecture exactly as-is while replacing direct local model dependencies with a Dockerized runtime.
+
+This is infrastructure planning only. The existing AirLock application, UI, and API contract remain canonical.
 
 ---
 
-## What We Found
+## Existing Application Contract
 
-### Problem 1 — CPU Governor on Powersave
-The Linux CPU governor was set to `powersave`, running the CPU at ~1700MHz instead of the full 4400MHz.
+The current Avalonia application expects a local HTTP inference endpoint:
 
-**Diagnosis:**
-```bash
-cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-# returned: powersave
-
-cat /proc/cpuinfo | grep "cpu MHz" | head -4
-# returned: ~1700MHz average
+```json
+"ModelSettings": {
+  "DefaultModel": "mistral",
+  "Mistral": {
+    "ModelName": "mistral:7b-instruct-q4_K_M",
+    "Endpoint": "http://localhost:11434/api/generate"
+  }
+}
 ```
 
-**Fix:**
+This contract is preserved unchanged. The Docker runtime must satisfy this exact local API structure. Do not use `"mistral"` or `"mistral:latest"` as the model name — always specify an explicit quantized variant.
+
+---
+
+## Scope
+
+Included:
+- Docker runtime
+- Single Mistral model
+- Local-only inference
+- Offline-capable operation
+- Existing Avalonia compatibility
+- Existing localhost API compatibility
+- Future appliance-image compatibility
+
+Excluded:
+- Mixtral
+- Multi-model routing
+- Cloud inference
+- Kubernetes
+- Orchestration layers
+- Architecture rewrites
+
+---
+
+## Step 1 — Set CPU Governor to Performance
+
+**Do this before anything else. On every new machine.**
+
+The Linux CPU governor defaults to `powersave` on most installs. On the Ryzen 7 5700U this limits the CPU to ~1700MHz instead of ~4400MHz — cutting inference speed by more than half.
+
 ```bash
 sudo apt install cpufrequtils -y
 sudo cpupower frequency-set -g performance
 ```
 
-**Verify:**
+Verify:
 ```bash
 cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-# should return: performance
+# must return: performance
 
 cat /proc/cpuinfo | grep "cpu MHz" | head -4
-# should show 4000MHz+ on at least some cores
+# must show 4000MHz+ on at least some cores
 ```
 
-**Make it permanent:**
+Make it permanent:
 ```bash
 sudo systemctl enable cpupower
 sudo nano /etc/default/cpupower
-# Set: CPUPOWER_START_OPTS="frequency-set -g performance"
+# Set line: CPUPOWER_START_OPTS="frequency-set -g performance"
 ```
 
 ---
 
-### Problem 2 — Container Built with NVIDIA/GPU Flags
-The original `airlock-ollama` container was created with NVIDIA environment variables baked in (`NVIDIA_VISIBLE_DEVICES=all`, `NVIDIA_DRIVER_CAPABILITIES=compute,utility`). This machine has no GPU. Ollama was likely falling back to a degraded CPU path or single-threaded mode.
+## Step 2 — Create the Ollama Container
 
-**Diagnosis:**
+Use this exact command. No GPU flags. No NVIDIA environment variables. Full CPU threads. Explicit context length.
+
 ```bash
-docker inspect airlock-ollama | grep -i env -A 20
-# showed NVIDIA vars present
-```
-
-**Fix — recreate the container clean:**
-```bash
-docker stop airlock-ollama
-docker rm airlock-ollama
-
 docker run -d \
   --name airlock-ollama \
   -p 11434:11434 \
@@ -66,85 +94,44 @@ docker run -d \
   ollama/ollama
 ```
 
-Key flags:
-- `OLLAMA_NUM_THREADS=16` — explicitly use all 16 threads (8 cores / 2 threads each)
-- `OLLAMA_CONTEXT_LENGTH=4096` — set context window for letter-sized prompts (~3000 words)
-- No NVIDIA flags — clean CPU-only
+**Critical:** Never add `NVIDIA_VISIBLE_DEVICES`, `NVIDIA_DRIVER_CAPABILITIES`, or any GPU flags. AirLock is CPU-only by design. A GPU-configured container will fall back to a degraded CPU path.
 
 ---
 
-### Problem 3 — Wrong Model Variant
-`mistral:latest` was being used — an unspecified pull that could be any quantization. For CPU-only inference the quantization level matters significantly for speed.
+## Step 3 — Pull Mistral Models
 
-**Diagnosis:**
-```bash
-docker exec airlock-ollama ollama list
-# showed: mistral:latest  4.4GB
-```
+Always pull specific quantized variants. Never use `ollama pull mistral` — it resolves to `latest` which is unspecified.
 
-**Model options pulled (best to slowest on CPU):**
-| Model | Size | Speed | Quality |
-|---|---|---|---|
-| `mistral:7b-instruct-q4_K_M` | ~4.8GB | Fastest | Good |
-| `mistral:7b-instruct-q5_K_M` | ~5.4GB | ~20% slower | Better |
-| `mistral:7b-instruct-q8_0` | ~7.7GB | ~2x slower | Best |
-
-**Pull commands:**
 ```bash
 docker exec airlock-ollama ollama pull mistral:7b-instruct-q4_K_M
 docker exec airlock-ollama ollama pull mistral:7b-instruct-q5_K_M
 docker exec airlock-ollama ollama pull mistral:7b-instruct-q8_0
 ```
 
-**Recommended default:** `mistral:7b-instruct-q5_K_M` — best quality/speed balance for letter drafting.
+| Model | Size | Speed | Quality | Use |
+|---|---|---|---|---|
+| `q4_K_M` | ~4.8GB | Fastest | Good | Default / testing |
+| `q5_K_M` | ~5.4GB | ~20% slower | Better | Recommended production |
+| `q8_0` | ~7.7GB | ~2x slower | Best | Quality-critical |
+
+Each pull takes time on a slow connection. The model volume is persistent — pulls only happen once.
 
 ---
 
-### Problem 4 — appsettings.json Points at Generic Model Name
-Airlock's config was pointing at `"mistral"` (resolves to `mistral:latest`) instead of a specific quantized variant.
+## Step 4 — Verify the Endpoint
 
-**Fix — update `appsettings.json`:**
-```json
-"Mistral": {
-  "ModelName": "mistral:7b-instruct-q4_K_M",
-  "Endpoint": "http://localhost:11434/api/generate"
-}
+```bash
+curl http://localhost:11434/api/tags
 ```
 
-Switch to `q5_K_M` when you want better quality at acceptable speed cost.
+Should return a JSON list of available models. If it returns nothing, the container is not ready — wait 10 seconds and retry.
 
 ---
 
-## Baseline Performance (Before Fixes)
-```
-prompt_eval_count: 10 tokens
-eval_count: 538 tokens
-time: 2 minutes 17 seconds
-~4 tokens/second  ← should be 15-20 tok/sec on this CPU
-```
+## Step 5 — Benchmark
 
----
+Run this and confirm speed is acceptable before starting AirLock:
 
-## Diagnostic Commands (Run Anytime)
-
-**Check container is healthy:**
-```bash
-docker ps | grep ollama
-docker stats airlock-ollama --no-stream
-```
-
-**Check CPU governor:**
-```bash
-cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-cat /proc/cpuinfo | grep "cpu MHz"
-```
-
-**Check loaded models:**
-```bash
-docker exec airlock-ollama ollama list
-```
-
-**Benchmark Ollama speed:**
 ```bash
 time curl -s http://localhost:11434/api/generate -d '{
   "model": "mistral:7b-instruct-q4_K_M",
@@ -153,17 +140,92 @@ time curl -s http://localhost:11434/api/generate -d '{
 }' | grep -o '"eval_count":[0-9]*\|"eval_duration":[0-9]*\|"prompt_eval_count":[0-9]*'
 ```
 
----
+**Expected on Ryzen 7 5700U in performance mode:** 15–20 tokens/second
 
-## Architecture Notes
-- Airlock is a C# / Avalonia desktop app
-- Model config lives in `appsettings.json` under `ModelSettings`
-- Prompt is built in `PromptTemplateRegistry.cs` via `FillPrompt()` from `.aibcodex` template files
-- HTTP call is in `LetterTab.axaml.cs` → `CallLlmAsync()` → streams to `http://localhost:11434/api/generate`
-- Mixtral is available on port `11534` as a second model option
-- Context is intentionally large — Airlock sends big prompts by design
-- CPU-only is intentional — small form factor, no GPU
+If you see under 8 tokens/second:
+1. Check CPU governor — probably still on `powersave`
+2. Check container env vars — probably has NVIDIA flags
+3. Recreate the container using the command in Step 2
 
 ---
 
-*Last updated: June 2026 — Session with Claude*
+## Step 6 — Update appsettings.json
+
+Point AirLock at the specific model variant:
+
+```json
+"ModelSettings": {
+  "DefaultModel": "mistral",
+  "Mistral": {
+    "ModelName": "mistral:7b-instruct-q5_K_M",
+    "Endpoint": "http://localhost:11434/api/generate"
+  }
+}
+```
+
+Use `q4_K_M` for faster testing, `q5_K_M` for production.
+
+---
+
+## Port Allocation
+
+| Service | Port |
+|---|---|
+| Mistral (Ollama) | 11434 |
+| Mixtral (reserved) | 11534 |
+
+Ports are fixed and deterministic. Do not use dynamic port assignment.
+
+---
+
+## Offline-First Requirement
+
+AirLock requires:
+- Local inference only
+- No cloud dependency after initial model pull
+- No telemetry
+- No API billing
+- No internet required at runtime
+
+The Dockerized Mistral runtime must function without external connectivity once models are installed locally. The `ollama` volume persists models across container restarts.
+
+---
+
+## Diagnostic Commands
+
+```bash
+# Container running?
+docker ps | grep ollama
+
+# Resource usage
+docker stats airlock-ollama --no-stream
+
+# Models available
+docker exec airlock-ollama ollama list
+
+# CPU governor
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+# Container environment (check for GPU flags)
+docker inspect airlock-ollama | grep -i env -A 20
+```
+
+---
+
+## Future Appliance Image Direction
+
+```
+Minimal Linux
+→ X11
+→ Lightweight Desktop
+→ Docker Engine
+→ Ollama Container (CPU-only, no GPU flags)
+→ Mistral Runtime (q5_K_M)
+→ AirLock Avalonia UI
+```
+
+The operating system should become invisible to the operator. The primary user experience should remain AirLock itself.
+
+---
+
+*Last updated: June 2026 — validated on Ryzen 7 5700U / 38GB RAM*
