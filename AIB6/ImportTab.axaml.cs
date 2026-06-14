@@ -25,7 +25,7 @@ namespace AIB6
 
             var title = new TextBlock
             {
-                Text = "Import Codex Packs",
+                Text = "Import Airpacks",
                 FontSize = 24,
                 FontWeight = FontWeight.Bold,
                 Margin = new Thickness(0, 0, 0, 10)
@@ -33,14 +33,14 @@ namespace AIB6
 
             var instructions = new TextBlock
             {
-                Text = "Import new prompt templates.",
+                Text = "Import new Airpack workflow files.",
                 FontSize = 14,
                 Margin = new Thickness(0, 0, 0, 20)
             };
 
             _importButton = new Button
             {
-                Content = "Click - Import Codex (.aibcodex)",
+                Content = "Click - Import Airpack (.airpack)",
                 Width = 300,
                 Height = 50,
                 Background = new SolidColorBrush(Color.Parse("#F7630C")),
@@ -80,10 +80,10 @@ namespace AIB6
                     return;
                 }
 
-                var importFiles = Directory.GetFiles(importPath, "*.aibcodex");
+                var importFiles = Directory.GetFiles(importPath, "*.airpack");
                 if (importFiles.Length == 0)
                 {
-                    _statusText.Text = "No Codex files found. Make sure your USB includes at least one '.aibcodex' file.";
+                    _statusText.Text = "No Airpack files found. Make sure your USB includes at least one '.airpack' file.";
                     return;
                 }
 

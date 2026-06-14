@@ -20,8 +20,8 @@ namespace AIB6.Helpers
                 .Replace("\"", "'")
                 .Replace("\u00A0", " ");
 
-            // Remove control characters (non-printable ASCII)
-            safe = Regex.Replace(safe, @"[\x00-\x1F]", "");
+            // Remove control characters (non-printable ASCII), but preserve \n (0x0A) and \t (0x09)
+            safe = Regex.Replace(safe, @"[\x00-\x08\x0B\x0C\x0E-\x1F]", "");
 
             safe = safe.Trim();
 

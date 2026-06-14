@@ -41,7 +41,7 @@ namespace AIB6.Helpers
 
             var newTemplates = new List<PromptTemplate>();
 
-            var files = Directory.GetFiles(folderPath, "*.aibcodex", SearchOption.TopDirectoryOnly);
+            var files = Directory.GetFiles(folderPath, "*.airpack", SearchOption.TopDirectoryOnly);
 
             foreach (var file in files)
             {

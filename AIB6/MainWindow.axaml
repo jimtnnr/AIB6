@@ -24,7 +24,7 @@
     <TabItem Header="Review Drafts">
       <aib6:ArchiveGridView x:Name="ArchiveGridView"/>
     </TabItem>
-    <TabItem Header="Import Templates">
+    <TabItem Header="Import Airpacks">
       <aib6:ImportTab/>
     </TabItem>
   </TabControl>
