@@ -194,6 +194,16 @@ namespace AIB6
                     $"✅ Imported {totalImported} new Airpack file(s) from \"{driveLabel}\"."
                 };
 
+                if (totalImported > 0)
+                {
+                    // Refresh the in-memory registry so the new pack(s) are on disk
+                    // and the registry is consistent. The currently-open Create Drafts
+                    // tab's dropdowns are populated once at construction and won't
+                    // pick up new entries until AirLock is restarted.
+                    PromptTemplateRegistry.Load(Program.AppSettings.Paths.PromptTemplatesFolder);
+                    messageLines.Add("Restart AirLock to use the newly imported pack(s).");
+                }
+
                 if (skippedFiles.Count > 0)
                 {
                     messageLines.Add($"Skipped {skippedFiles.Count} file(s) — already imported:\n- {string.Join("\n- ", skippedFiles)}");

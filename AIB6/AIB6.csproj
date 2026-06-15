@@ -33,4 +33,10 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="ImportTab.axaml.cs">
+        <DependentUpon>ImportTab.axaml</DependentUpon>
+      </Compile>
+    </ItemGroup>
 </Project>
