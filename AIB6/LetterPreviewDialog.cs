@@ -8,6 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using System.IO;
 using System.Threading.Tasks;
+using AIB6.Helpers;
 
 namespace AIB6
 {
@@ -114,43 +115,48 @@ namespace AIB6
                 _statusText.Foreground = Brushes.Black;
             });
 
-            // Simulate export time
-            await Task.Delay(1750);
-
-            // Update to "Export Complete" in green
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                _statusText.Text = "Export Complete";
-                _statusText.Foreground = Brushes.Green;
-            });
-        }
-        private async Task ExportToUSBAsyncOld()
-        {
             try
             {
-                var exportFolder = Program.AppSettings.Paths.ExportUSB;
+                var drives = UsbDriveScanner.FindMountedDrives();
 
-                if (!Directory.Exists(exportFolder))
+                if (drives.Count == 0)
                 {
                     await Dispatcher.UIThread.InvokeAsync(() =>
-                        _statusText.Text = "No USB drive found. Please insert a USB stick and try again.");
+                    {
+                        _statusText.Text = "No USB drive found. Please insert a USB drive and try again.";
+                        _statusText.Foreground = Brushes.Red;
+                    });
                     return;
                 }
 
-                var destinationPath = Path.Combine(exportFolder, Path.GetFileName(_sourceFilePath));
+                // If multiple drives are found, use the first one for now.
+                // A drive picker dialog (multi-drive selection) is planned separately.
+                var selectedDrive = drives[0];
 
-                if (!File.Exists(destinationPath))
-                {
-                    File.Copy(_sourceFilePath, destinationPath, overwrite: true);
-                }
+                var exportFolder = Path.Combine(selectedDrive, "exports");
+                Directory.CreateDirectory(exportFolder);
+
+                var destinationPath = Path.Combine(exportFolder, Path.GetFileName(_sourceFilePath));
+                File.Copy(_sourceFilePath, destinationPath, overwrite: true);
+
+                var driveLabel = UsbDriveScanner.GetDriveLabel(selectedDrive);
+                var noteSuffix = drives.Count > 1
+                    ? $" (multiple drives detected — used \"{driveLabel}\")"
+                    : "";
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
-                    _statusText.Text = "Letter saved to your USB drive.");
+                {
+                    _statusText.Text = $"Saved to {driveLabel}/exports/{Path.GetFileName(destinationPath)}{noteSuffix}";
+                    _statusText.Foreground = Brushes.Green;
+                });
             }
             catch (Exception)
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
-                    _statusText.Text = "We couldn’t save your letter. Please check your USB and try again.");
+                {
+                    _statusText.Text = "We couldn't save your letter. Please check your USB and try again.";
+                    _statusText.Foreground = Brushes.Red;
+                });
             }
         }
     }

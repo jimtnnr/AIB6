@@ -3,6 +3,8 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using Avalonia;
 using AIB6.Helpers;
@@ -14,6 +16,7 @@ namespace AIB6
         private StackPanel _mainPanel;
         private TextBlock _statusText;
         private Button _importButton;
+        private Button _scanUsbButton;
 
         public ImportTab()
         {
@@ -48,6 +51,20 @@ namespace AIB6
             };
             _importButton.Click += OnImportClick;
 
+            // TEMPORARY DEBUG BUTTON — remove once UsbDriveScanner is wired into
+            // real Import/Export flows (items #4-7). Lets us test drive detection
+            // directly from inside the app without a separate console project.
+            _scanUsbButton = new Button
+            {
+                Content = "Debug: Scan USB Drives",
+                Width = 300,
+                Height = 40,
+                Margin = new Thickness(0, 10, 0, 0),
+                Background = new SolidColorBrush(Color.Parse("#666666")),
+                Foreground = Brushes.White
+            };
+            _scanUsbButton.Click += OnScanUsbClick;
+
             _statusText = new TextBlock
             {
                 Text = string.Empty,
@@ -58,12 +75,32 @@ namespace AIB6
             _mainPanel.Children.Add(title);
             _mainPanel.Children.Add(instructions);
             _mainPanel.Children.Add(_importButton);
+            _mainPanel.Children.Add(_scanUsbButton);
             _mainPanel.Children.Add(_statusText);
         }
 
         private void OnImportClick(object? sender, RoutedEventArgs e)
         {
             RunImportProcess();
+        }
+
+        private void OnScanUsbClick(object? sender, RoutedEventArgs e)
+        {
+            var drives = UsbDriveScanner.FindMountedDrives();
+
+            if (drives.Count == 0)
+            {
+                _statusText.Text = "Scan result: No USB drives detected.";
+                return;
+            }
+
+            var lines = new List<string> { $"Scan result: {drives.Count} drive(s) found:" };
+            foreach (var drive in drives)
+            {
+                lines.Add($"- {UsbDriveScanner.GetDriveLabel(drive)}  ({drive})");
+            }
+
+            _statusText.Text = string.Join("\n", lines);
         }
 
         private void RunImportProcess()
