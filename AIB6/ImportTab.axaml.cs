@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.VisualTree;
 using AIB6.Helpers;
 
 namespace AIB6
@@ -79,9 +81,9 @@ namespace AIB6
             _mainPanel.Children.Add(_statusText);
         }
 
-        private void OnImportClick(object? sender, RoutedEventArgs e)
+        private async void OnImportClick(object? sender, RoutedEventArgs e)
         {
-            RunImportProcess();
+            await RunImportProcess();
         }
 
         private void OnScanUsbClick(object? sender, RoutedEventArgs e)
@@ -103,24 +105,51 @@ namespace AIB6
             _statusText.Text = string.Join("\n", lines);
         }
 
-        private void RunImportProcess()
+        private async Task RunImportProcess()
         {
             try
             {
-                var importPath = Program.AppSettings.Paths.ImportFolder;
                 var templatePath = Environment.ExpandEnvironmentVariables(Program.AppSettings.Paths.PromptTemplatesFile);
                 var configDir = Path.GetDirectoryName(templatePath);
 
-                if (string.IsNullOrWhiteSpace(importPath) || !Directory.Exists(importPath))
+                var drives = UsbDriveScanner.FindMountedDrives();
+
+                if (drives.Count == 0)
                 {
-                    _statusText.Text = "No import folder detected. Check that your USB is plugged in and contains the required folder.";
+                    _statusText.Text = "No USB drive found. Please insert a USB drive and try again.";
                     return;
                 }
+
+                // If multiple drives are found, ask the user which to use.
+                string selectedDrive;
+                if (drives.Count == 1)
+                {
+                    selectedDrive = drives[0];
+                }
+                else
+                {
+                    var picker = new UsbDrivePickerDialog();
+                    picker.Populate(drives);
+                    var picked = await picker.ShowDialog<string?>(this.GetVisualRoot() as Window);
+
+                    if (picked == null)
+                    {
+                        _statusText.Text = "Import cancelled.";
+                        return;
+                    }
+
+                    selectedDrive = picked;
+                }
+
+                var driveLabel = UsbDriveScanner.GetDriveLabel(selectedDrive);
+
+                var importPath = Path.Combine(selectedDrive, "airpacks");
+                Directory.CreateDirectory(importPath);
 
                 var importFiles = Directory.GetFiles(importPath, "*.airpack");
                 if (importFiles.Length == 0)
                 {
-                    _statusText.Text = "No Airpack files found. Make sure your USB includes at least one '.airpack' file.";
+                    _statusText.Text = $"No Airpack files found on \"{driveLabel}\". Make sure your USB includes an 'airpacks' folder containing at least one '.airpack' file.";
                     return;
                 }
 
@@ -162,7 +191,7 @@ namespace AIB6
 
                 var messageLines = new List<string>
                 {
-                    $"✅ Imported {totalImported} new Codex file(s)."
+                    $"✅ Imported {totalImported} new Airpack file(s) from \"{driveLabel}\"."
                 };
 
                 if (skippedFiles.Count > 0)

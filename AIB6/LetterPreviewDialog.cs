@@ -129,9 +129,30 @@ namespace AIB6
                     return;
                 }
 
-                // If multiple drives are found, use the first one for now.
-                // A drive picker dialog (multi-drive selection) is planned separately.
-                var selectedDrive = drives[0];
+                // If multiple drives are found, ask the user which to use.
+                string selectedDrive;
+                if (drives.Count == 1)
+                {
+                    selectedDrive = drives[0];
+                }
+                else
+                {
+                    var picker = new UsbDrivePickerDialog();
+                    picker.Populate(drives);
+                    var picked = await picker.ShowDialog<string?>(this);
+
+                    if (picked == null)
+                    {
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            _statusText.Text = "Export cancelled.";
+                            _statusText.Foreground = Brushes.Black;
+                        });
+                        return;
+                    }
+
+                    selectedDrive = picked;
+                }
 
                 var exportFolder = Path.Combine(selectedDrive, "exports");
                 Directory.CreateDirectory(exportFolder);
@@ -140,13 +161,10 @@ namespace AIB6
                 File.Copy(_sourceFilePath, destinationPath, overwrite: true);
 
                 var driveLabel = UsbDriveScanner.GetDriveLabel(selectedDrive);
-                var noteSuffix = drives.Count > 1
-                    ? $" (multiple drives detected — used \"{driveLabel}\")"
-                    : "";
 
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    _statusText.Text = $"Saved to {driveLabel}/exports/{Path.GetFileName(destinationPath)}{noteSuffix}";
+                    _statusText.Text = $"Saved to {driveLabel}/exports/{Path.GetFileName(destinationPath)}";
                     _statusText.Foreground = Brushes.Green;
                 });
             }

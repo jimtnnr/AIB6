@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AIB6.UsbDrivePickerDialog"
+        Title="Select USB Drive"
+        Width="420"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <StackPanel Name="RootStack" Margin="20" Spacing="10" />
+</Window>
