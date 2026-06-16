@@ -39,4 +39,8 @@
         <DependentUpon>ImportTab.axaml</DependentUpon>
       </Compile>
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="NotesMD\ReactSpecs\" />
+    </ItemGroup>
 </Project>
